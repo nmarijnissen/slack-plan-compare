@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Slack Plan Comparison</title>
+<style>
+  :root {
+    --aubergine: #4a154b;
+    --aubergine-dark: #350d36;
+    --blue: #36c5f0;
+    --green: #2eb67d;
+    --yellow: #ecb22e;
+    --red: #e01e5a;
+    --bg: #f8f8fa;
+    --card: #ffffff;
+    --text: #1d1c1d;
+    --muted: #616061;
+    --border: #e2e2e6;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.45;
+  }
+  header {
+    background: linear-gradient(135deg, var(--aubergine), var(--aubergine-dark));
+    color: #fff;
+    padding: 40px 24px 0;
+    text-align: center;
+  }
+  header h1 { margin: 0 0 8px; font-size: 2rem; }
+  header p { margin: 0; opacity: .85; }
+  nav.tabs { display: flex; justify-content: center; gap: 4px; margin-top: 26px; flex-wrap: wrap; }
+  nav.tabs a {
+    color: #fff; text-decoration: none; padding: 10px 18px; font-weight: 600; font-size: .92rem;
+    border-radius: 10px 10px 0 0; opacity: .8;
+  }
+  nav.tabs a:hover { opacity: 1; background: rgba(255,255,255,.08); }
+  nav.tabs a.active { background: var(--bg); color: var(--aubergine); opacity: 1; }
+
+  main { max-width: 1200px; margin: 0 auto; padding: 24px; }
+  section.page { display: none; }
+  section.page.active { display: block; }
+  h2 { margin: 8px 0 6px; font-size: 1.5rem; }
+  .lead { color: var(--muted); margin: 0 0 22px; max-width: 760px; }
+
+  /* Plan selector */
+  .section-title { font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 10px; }
+  .plan-picker { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-bottom: 14px; }
+  .plan-card {
+    position: relative;
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    cursor: pointer;
+    transition: border-color .15s, box-shadow .15s, transform .15s;
+    user-select: none;
+  }
+  .plan-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.06); }
+  .plan-card.selected { border-color: var(--plan-color); box-shadow: 0 0 0 3px color-mix(in srgb, var(--plan-color) 20%, transparent); }
+  .plan-card.legacy { background: repeating-linear-gradient(135deg, #fff, #fff 10px, #fbfafb 10px, #fbfafb 20px); }
+  .plan-card .check {
+    position: absolute; top: 14px; right: 14px;
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 2px solid var(--border);
+    display: grid; place-items: center; font-size: 13px; color: #fff;
+  }
+  .plan-card.selected .check { background: var(--plan-color); border-color: var(--plan-color); }
+  .plan-card h3 { margin: 0 0 4px; font-size: 1.15rem; padding-right: 26px; }
+  .plan-card .tagline { margin: 0 0 12px; color: var(--muted); font-size: .86rem; min-height: 2.5em; }
+  .plan-card .price { font-size: 1.5rem; font-weight: 800; }
+  .plan-card .price small { font-size: .8rem; font-weight: 500; color: var(--muted); }
+  .plan-card .badge { display: inline-block; margin-top: 8px; margin-right: 4px; font-size: .72rem; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: color-mix(in srgb, var(--plan-color) 15%, white); color: var(--plan-color); }
+  .plan-card .badge.legacy-badge { background: #fdf3dc; color: #8a6100; }
+  .group-label { display: flex; align-items: center; gap: 10px; margin: 18px 0 10px; }
+  .group-label .section-title { margin: 0; }
+  .group-label .hint { font-size: .8rem; color: var(--muted); }
+
+  /* Controls */
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 14px; align-items: center;
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 16px; margin: 20px 0 18px;
+    position: sticky; top: 0; z-index: 5;
+  }
+  .controls[hidden] { display: none; }
+  .toggle-group { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .toggle-group button {
+    border: 0; background: transparent; padding: 7px 14px; cursor: pointer; font: inherit; font-size: .88rem; color: var(--muted);
+  }
+  .toggle-group button + button { border-left: 1px solid var(--border); }
+  .toggle-group button.active { background: var(--aubergine); color: #fff; }
+  .controls label { font-size: .88rem; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
+  .controls input[type="search"], .controls input[type="number"] {
+    font: inherit; font-size: .9rem; padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px;
+  }
+  .controls input[type="search"] { flex: 1; min-width: 180px; }
+  .controls input[type="number"] { width: 90px; }
+
+  /* Cost summary */
+  .cost-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .cost-tile { background: var(--card); border: 1px solid var(--border); border-left: 5px solid var(--plan-color); border-radius: var(--radius); padding: 14px 16px; }
+  .cost-tile .name { font-weight: 700; font-size: .9rem; }
+  .cost-tile .amount { font-size: 1.35rem; font-weight: 800; margin-top: 2px; }
+  .cost-tile .sub { font-size: .8rem; color: var(--muted); }
+
+  /* Tables */
+  .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 560px; }
+  th, td { padding: 11px 14px; text-align: left; border-bottom: 1px solid var(--border); font-size: .9rem; vertical-align: top; }
+  thead th { background: #fafafa; font-size: .85rem; }
+  thead th.plan-col { border-bottom: 3px solid var(--plan-color); text-align: center; }
+  thead th .legacy-tag { display: block; font-size: .68rem; font-weight: 600; color: #8a6100; }
+  td.val { text-align: center; }
+  tr.category td {
+    background: #f3eff3; font-weight: 700; color: var(--aubergine); cursor: pointer; font-size: .85rem;
+    text-transform: uppercase; letter-spacing: .04em;
+  }
+  tr.category td .chev { display: inline-block; transition: transform .15s; margin-right: 6px; }
+  tr.category.collapsed td .chev { transform: rotate(-90deg); }
+  tr.feature:hover td { background: #fcfbfc; }
+  tr.feature.diff td:first-child { box-shadow: inset 3px 0 0 var(--yellow); }
+  .feat-name { font-weight: 600; }
+  .feat-desc { display: block; font-size: .78rem; color: var(--muted); font-weight: 400; margin-top: 2px; }
+  .yes { color: var(--green); font-weight: 800; font-size: 1.05rem; }
+  .no { color: #c4c4c8; font-size: 1.05rem; }
+  .addon, .trial { font-weight: 700; font-size: .78rem; padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
+  .addon { color: #8a6100; background: #fdf3dc; }
+  .trial { color: #1264a3; background: #e8f5fa; }
+  .text-val { font-size: .85rem; }
+  .note { font-size: .82rem; color: var(--muted); margin: 10px 2px 0; }
+
+  .empty { padding: 40px; text-align: center; color: var(--muted); }
+
+  /* Slackbot */
+  .bot-hero { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .bot-tile { background: var(--card); border: 1px solid var(--border); border-top: 4px solid var(--plan-color); border-radius: var(--radius); padding: 16px; }
+  .bot-tile .name { font-weight: 700; }
+  .bot-tile .access { font-size: 1.15rem; font-weight: 800; margin: 4px 0; }
+  .bot-tile p { margin: 0; font-size: .84rem; color: var(--muted); }
+
+  /* Security */
+  .sec-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+  @media (max-width: 900px) { .sec-grid { grid-template-columns: 1fr; } }
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; }
+  .panel h3 { margin: 0 0 4px; font-size: 1.05rem; }
+  .panel .sub { margin: 0 0 14px; font-size: .84rem; color: var(--muted); }
+
+  .chat { display: flex; flex-direction: column; height: 560px; }
+  .chat-log { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 4px 2px 12px; }
+  .msg { max-width: 88%; padding: 10px 14px; border-radius: 14px; font-size: .9rem; }
+  .msg.user { align-self: flex-end; background: var(--aubergine); color: #fff; border-bottom-right-radius: 4px; }
+  .msg.bot { align-self: flex-start; background: #f4f2f5; border-bottom-left-radius: 4px; }
+  .msg.bot h4 { margin: 0 0 4px; font-size: .9rem; }
+  .msg.bot p { margin: 0 0 6px; }
+  .msg.bot ul { margin: 4px 0 6px; padding-left: 18px; }
+  .msg .src { font-size: .74rem; color: var(--muted); margin-top: 6px; }
+  .msg .src a { color: var(--aubergine); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .chip {
+    border: 1px solid var(--border); background: #fff; border-radius: 99px; padding: 5px 11px; cursor: pointer;
+    font: inherit; font-size: .78rem; color: var(--aubergine);
+  }
+  .chip:hover { border-color: var(--aubergine); }
+  .chat-form { display: flex; gap: 8px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .chat-form input { flex: 1; font: inherit; font-size: .92rem; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; }
+  .chat-form button { font: inherit; font-weight: 700; border: 0; border-radius: 10px; padding: 0 18px; background: var(--green); color: #fff; cursor: pointer; }
+
+  .certs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+  .cert { font-size: .78rem; font-weight: 700; padding: 6px 10px; border-radius: 8px; background: #f3eff3; color: var(--aubergine); }
+  details.doc { border-bottom: 1px solid var(--border); }
+  details.doc:last-child { border-bottom: 0; }
+  details.doc summary { cursor: pointer; padding: 10px 2px; font-weight: 600; font-size: .9rem; list-style: none; display: flex; justify-content: space-between; gap: 8px; }
+  details.doc summary::-webkit-details-marker { display: none; }
+  details.doc summary::after { content: "+"; color: var(--muted); font-weight: 400; }
+  details.doc[open] summary::after { content: "–"; }
+  details.doc .body { padding: 0 2px 12px; font-size: .86rem; color: #333; }
+  details.doc .body p { margin: 0 0 6px; }
+  .doc-cat { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 14px 0 2px; }
+  .doc-cat:first-child { margin-top: 0; }
+
+  footer { max-width: 1200px; margin: 0 auto; padding: 10px 24px 40px; color: var(--muted); font-size: .8rem; }
+  footer a { color: var(--aubergine); }
+
+  @media (max-width: 640px) {
+    header h1 { font-size: 1.5rem; }
+    .controls { position: static; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Compare Slack Plans</h1>
+  <p>Compare plans and prices, see what Slackbot can do on each plan, and get answers on security &amp; compliance.</p>
+  <nav class="tabs" id="tabs">
+    <a href="#plans" data-page="plans">Plans &amp; pricing</a>
+    <a href="#slackbot" data-page="slackbot">Slackbot</a>
+    <a href="#security" data-page="security">Security &amp; compliance</a>
+  </nav>
+</header>
+
+<main>
+  <!-- Shared controls -->
+  <div class="controls" id="controls">
+    <div class="toggle-group" id="currencyToggle" aria-label="Currency">
+      <button data-currency="EUR">€ EUR</button>
+      <button data-currency="USD">$ USD</button>
+      <button data-currency="GBP">£ GBP</button>
+    </div>
+    <div class="toggle-group" id="billingToggle" aria-label="Billing">
+      <button data-billing="annual" class="active">Annual billing</button>
+      <button data-billing="monthly">Monthly billing</button>
+    </div>
+    <label class="plans-only">Seats <input type="number" id="seats" min="1" value="50" /></label>
+    <label class="plans-only"><input type="checkbox" id="diffOnly" /> Differences only</label>
+    <input class="plans-only" type="search" id="search" placeholder="Search features… (e.g. SSO, huddles, AI)" />
+  </div>
+
+  <!-- ============ PLANS ============ -->
+  <section class="page" id="page-plans">
+    <p class="section-title">1 · Select plans (choose 2 or more)</p>
+    <div class="plan-picker" id="planPickerCurrent"></div>
+    <div class="group-label">
+      <p class="section-title">Legacy plans</p>
+      <span class="hint">No longer sold — useful for customers comparing their current contract</span>
+    </div>
+    <div class="plan-picker" id="planPickerLegacy"></div>
+
+    <p class="section-title" style="margin-top:24px">2 · Estimated cost</p>
+    <div class="cost-row" id="costRow"></div>
+
+    <p class="section-title">3 · Feature comparison</p>
+    <div class="table-wrap">
+      <table id="compareTable"><thead></thead><tbody></tbody></table>
+      <div class="empty" id="emptyState" hidden></div>
+    </div>
+    <p class="note">Legacy plan values reflect Slack's last published packaging before the June 2025 plan changes. Customers on a legacy plan move to the new version of the plan at their first renewal after 17 August 2025 — check the order form for contract-specific terms.</p>
+  </section>
+
+  <!-- ============ SLACKBOT ============ -->
+  <section class="page" id="page-slackbot">
+    <h2>Slackbot across plans</h2>
+    <p class="lead">Slackbot is Slack's personal AI agent. It understands your conversations, files and connected apps, and can answer questions, draft content, build workflows and take action. How much you can use it depends on the plan. This view uses the plans you've selected on the Plans tab.</p>
+    <div class="bot-hero" id="botHero"></div>
+    <div class="table-wrap">
+      <table id="botTable"><thead></thead><tbody></tbody></table>
+    </div>
+    <p class="note">Source: <a href="https://slack.com/features/slackbot" target="_blank" rel="noopener">slack.com/features/slackbot</a> and <a href="https://slack.com/pricing" target="_blank" rel="noopener">slack.com/pricing</a>. Usage limits can change; "Trial" means Free and Pro workspaces get a limited number of included Slackbot conversations. Legacy plans don't include the Slackbot agent — some AI features were available through the legacy Slack AI add-on.</p>
+  </section>
+
+  <!-- ============ SECURITY ============ -->
+  <section class="page" id="page-security">
+    <h2>Security &amp; compliance</h2>
+    <p class="lead">An overview of how Slack protects your data — including Slack's AI features. Ask a question in the assistant, or browse the topics.</p>
+
+    <div class="sec-grid">
+      <div class="panel chat">
+        <h3>Ask about security &amp; compliance</h3>
+        <p class="sub">Answers come only from the documentation on this page. For anything contract-specific, contact your Slack account team.</p>
+        <div class="chat-log" id="chatLog"></div>
+        <form class="chat-form" id="chatForm" autocomplete="off">
+          <input id="chatInput" placeholder="e.g. Is our data used to train AI models?" aria-label="Your question" />
+          <button type="submit">Ask</button>
+        </form>
+      </div>
+
+      <div class="panel">
+        <h3>Certifications &amp; attestations</h3>
+        <p class="sub">Independent audits and frameworks Slack supports</p>
+        <div class="certs" id="certs"></div>
+        <h3>Documentation</h3>
+        <p class="sub">Click a topic to read it</p>
+        <div id="docList"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Pricing based on Slack's public pricing pages (retrieved Oct 2026). Prices exclude VAT/sales tax and may change; promotional discounts are not included.
+  Enterprise+ and Enterprise Select are quote-based. This is an unofficial comparison — always confirm details with Slack sales.
+  Security information summarises Slack's public documentation at <a href="https://slack.com/trust" target="_blank" rel="noopener">slack.com/trust</a>.
+</footer>
+
+<script>
+// =====================================================================
+// DATA
+// =====================================================================
+
+// price[currency] = { annual, monthly } per user per month. null = not published / contact sales.
+const PLANS = [
+  { id: "free", name: "Free", color: "#616061", tagline: "For small teams trying Slack out",
+    price: { USD: { annual: 0, monthly: 0 }, EUR: { annual: 0, monthly: 0 }, GBP: { annual: 0, monthly: 0 } } },
+  { id: "pro", name: "Pro", color: "#36c5f0", tagline: "More power for small teams who want better collaboration",
+    price: { USD: { annual: 7.25, monthly: 8.75 }, EUR: { annual: 6.75, monthly: 8.25 }, GBP: { annual: 5.75, monthly: 7 } } },
+  { id: "business", name: "Business+", color: "#2eb67d", tagline: "Scale your business with advanced AI, security and Salesforce features",
+    price: { USD: { annual: 15, monthly: 18 }, EUR: { annual: 15, monthly: 18 }, GBP: { annual: 12, monthly: 14.40 } }, badge: "Most popular" },
+  { id: "enterprise", name: "Enterprise+", color: "#4a154b", tagline: "Maximum performance, security and enterprise search for your whole organisation",
+    price: { USD: { annual: null, monthly: null }, EUR: { annual: null, monthly: null }, GBP: { annual: 36, monthly: null } }, badge: "Contact sales" },
+  { id: "business_legacy", name: "Business+ (legacy)", color: "#b07d0a", legacy: true, tagline: "The Business+ plan before June 2025 — AI was a separate add-on",
+    price: { USD: { annual: 12.50, monthly: 15 }, EUR: { annual: 11.75, monthly: 14.10 }, GBP: { annual: 9.75, monthly: 11.70 } } },
+  { id: "enterprise_select", name: "Enterprise Select", color: "#e01e5a", legacy: true, tagline: "Legacy enterprise plan for a single workspace with enterprise security",
+    price: { USD: { annual: null, monthly: null }, EUR: { annual: null, monthly: null }, GBP: { annual: null, monthly: null } } },
+];
+
+const CURRENCIES = {
+  USD: { locale: "en-US", code: "USD" },
+  EUR: { locale: "en-IE", code: "EUR" },
+  GBP: { locale: "en-GB", code: "GBP" },
+};
+
+// Values: true = included, false = not included, "addon" = paid add-on, "trial" = limited trial, string = detail.
+// Array order matches PLANS: [free, pro, business, enterprise, business_legacy, enterprise_select]
+const FEATURES = [
+  { category: "Messaging & collaboration", items: [
+    { name: "Message & file history", values: ["90 days", "Unlimited", "Unlimited", "Unlimited", "Unlimited", "Unlimited"] },
+    { name: "Huddles (audio/video)", desc: "Includes screen sharing on paid plans", values: ["1:1 only", "Group", "Group", "Group", "Group", "Group"] },
+    { name: "Canvases", values: [true, true, true, true, true, true] },
+    { name: "Lists", values: [true, true, true, true, true, true] },
+    { name: "Slack Connect", desc: "Work with external organisations", values: ["1:1 DMs only", "Channels, up to 250 orgs", "Channels, up to 250 orgs", "Channels, up to 250 orgs", "Channels, up to 250 orgs", "Channels, up to 250 orgs"] },
+    { name: "Workspaces", values: ["1", "1", "1", "Unlimited", "1", "1"] },
+  ]},
+  { category: "Automation & integrations", items: [
+    { name: "App integrations", desc: "From 2,600+ apps in the Slack Marketplace", values: ["Up to 10", "Unlimited", "Unlimited", "Unlimited", "Unlimited", "Unlimited"] },
+    { name: "Workflow Builder", values: [true, true, true, true, true, true] },
+    { name: "AI workflow generation", values: [false, true, true, true, "addon", "addon"] },
+    { name: "AI steps in Workflow Builder", values: [false, true, true, true, false, false] },
+  ]},
+  { category: "AI", items: [
+    { name: "Thread & channel summaries", values: [true, true, true, true, "addon", "addon"] },
+    { name: "Huddle notes & transcripts", values: [true, true, true, true, "addon", "addon"] },
+    { name: "Daily recaps", values: [true, true, true, true, "addon", "addon"] },
+    { name: "File summaries", values: [true, true, true, true, "addon", "addon"] },
+    { name: "AI translations", values: [true, true, true, true, false, false] },
+    { name: "Message explanations", values: [true, true, true, true, "addon", "addon"] },
+    { name: "AI search", values: [false, true, true, true, "addon", "addon"] },
+    { name: "AI writing assistance in canvas", values: [false, true, true, true, false, false] },
+    { name: "Enterprise search", desc: "Search across connected apps, databases and systems", values: [false, false, false, true, false, false] },
+  ]},
+  { category: "Security & compliance", items: [
+    { name: "Data encryption (at rest & in transit)", values: [true, true, true, true, true, true] },
+    { name: "Two-factor authentication", values: [true, true, true, true, true, true] },
+    { name: "Session duration controls", values: [true, true, true, true, true, true] },
+    { name: "Native device management", values: [true, true, true, true, true, true] },
+    { name: "Access logs", values: [true, true, true, true, true, true] },
+    { name: "Single sign-on (SSO)", values: ["Google OAuth", "SAML", "SAML", "Multiple SAML", "SAML", "SAML"] },
+    { name: "SCIM user provisioning", values: [false, true, true, true, true, true] },
+    { name: "Audit logs", values: [false, true, true, true, false, true] },
+    { name: "Data exports (all messages)", values: [false, true, true, true, true, true] },
+    { name: "EMM integration", values: [false, false, true, true, false, true] },
+    { name: "Data loss prevention (DLP)", values: [false, false, true, true, false, true] },
+    { name: "Data residency", values: [false, false, true, true, true, true] },
+    { name: "Information barriers", values: [false, false, true, true, false, false] },
+    { name: "Legal holds", values: [false, false, true, true, false, true] },
+    { name: "Discovery API (eDiscovery)", values: [false, false, true, true, false, true] },
+    { name: "HIPAA support", values: [false, false, true, true, false, true] },
+    { name: "Anomaly event response", values: [false, false, false, true, false, false] },
+    { name: "Slack EKM (Enterprise Key Management)", values: ["addon", "addon", "addon", "addon", false, "addon"] },
+  ]},
+  { category: "Administration", items: [
+    { name: "Channel posting permissions", values: ["#general only", "#general only", "All channels", "All channels", "All channels", "All channels"] },
+    { name: "Admin analytics dashboard", values: [false, true, true, true, true, true] },
+    { name: "Admin analytics API", values: [false, true, true, true, false, true] },
+    { name: "Message activity analytics", values: [false, true, true, true, true, true] },
+    { name: "Custom user groups", values: [false, true, true, true, true, true] },
+    { name: "Domain claiming", values: [false, false, true, true, false, true] },
+    { name: "Custom terms of service", values: [false, false, true, true, false, true] },
+    { name: "Granular admin roles", values: [false, false, true, true, false, true] },
+    { name: "Flagged content management", values: [false, false, false, true, false, false] },
+  ]},
+  { category: "Data retention & support", items: [
+    { name: "Data retention policies", values: ["Up to 1 year", "Unlimited (default)", "Unlimited (default)", "Unlimited (default)", "Unlimited (default)", "Unlimited (default)"] },
+    { name: "Support", values: ["24/7 standard", "24/7, 4-hour first response", "24/7 priority, 4-hour first response", "24/7 priority, 4-hour first response", "24/7, 4-hour first response", "24/7 priority, 4-hour first response"] },
+  ]},
+];
+
+// Slackbot: headline access per plan (same order as PLANS)
+const SLACKBOT_ACCESS = [
+  { access: "Limited trial", text: "A set of included Slackbot conversations to try it out." },
+  { access: "Limited trial", text: "A set of included Slackbot conversations to try it out." },
+  { access: "Ongoing access", text: "Slackbot for every member, with a weekly message limit per user." },
+  { access: "Unlimited", text: "Unlimited Slackbot, plus enterprise search across connected systems." },
+  { access: "Not included", text: "No Slackbot agent. Summaries, recaps and AI search were available via the legacy Slack AI add-on." },
+  { access: "Not included", text: "No Slackbot agent. Summaries, recaps and AI search were available via the legacy Slack AI add-on." },
+];
+
+const SLACKBOT_FEATURES = [
+  { category: "Access", items: [
+    { name: "Slackbot usage", values: ["Trial", "Trial", "Weekly limit", "Unlimited", false, false] },
+  ]},
+  { category: "Ask & find", items: [
+    { name: "Ask questions about your conversations & files", desc: "Rich answers grounded in what you already have access to", values: ["trial", "trial", true, true, false, false] },
+    { name: "Search & summarise channels and threads", values: ["trial", "trial", true, true, "addon", "addon"] },
+    { name: "Deep research", desc: "Multi-step research across Slack and connected sources", values: [false, false, true, true, false, false] },
+    { name: "Enterprise search", desc: "Find answers across connected apps, databases and systems", values: [false, false, false, true, false, false] },
+  ]},
+  { category: "Create", items: [
+    { name: "Draft messages, documents & canvases", values: ["trial", "trial", true, true, false, false] },
+    { name: "Interactive dashboards, reports, polls & calculators", values: ["trial", "trial", true, true, false, false] },
+    { name: "Build workflows just by asking", values: ["trial", "trial", true, true, false, false] },
+  ]},
+  { category: "Act", items: [
+    { name: "Work with connected apps", desc: "e.g. Jira, Figma, Docusign and tools via MCP", values: ["trial", "trial", true, true, false, false] },
+    { name: "Salesforce actions", desc: "Update records, prep for meetings, log calls and generate follow-ups", values: ["trial", "trial", true, true, false, false] },
+    { name: "Voice commands", values: ["trial", "trial", true, true, false, false] },
+  ]},
+  { category: "Personalise", items: [
+    { name: "Memory", desc: "Remembers your preferences and context over time", values: [false, false, true, true, false, false] },
+    { name: "Skills", desc: "Reusable instructions Slackbot can follow", values: [false, false, true, true, false, false] },
+  ]},
+];
+
+// Show Slackbot capabilities in the Plans & pricing table too, right after the AI category
+FEATURES.splice(FEATURES.findIndex(c => c.category === "AI") + 1, 0,
+  { category: "Slackbot (personal AI agent)", items: SLACKBOT_FEATURES.flatMap(g => g.items) });
+
+// Security knowledge base. Each entry: id, category, title, answer (HTML), keywords, source.
+const CERTS = ["ISO/IEC 27001", "ISO/IEC 27017", "ISO/IEC 27018", "ISO/IEC 27701", "SOC 2 Type II", "SOC 3", "FedRAMP Moderate", "HIPAA (Business+ & up)", "GDPR", "CSA STAR", "FINRA support", "IRAP (Australia)"];
+
+const TRUST = "https://slack.com/trust";
+const KB = [
+  // --- AI ---
+  { id: "ai-training", category: "AI security", title: "Is our data used to train AI models?",
+    answer: "<p><strong>No.</strong> Slack does not use customer data to train generative AI models. Your messages, files and other content are not used to train the large language models (LLMs) behind Slack's AI features, and they aren't shared with model providers for training.</p>",
+    keywords: ["train", "training", "trained", "learn", "model", "models", "llm", "data", "use", "ai", "improve"], source: TRUST + "/data-management/privacy-principles" },
+  { id: "ai-hosting", category: "AI security", title: "Where do the AI models run? Does data leave Slack?",
+    answer: "<p>Slack's AI models are hosted within Slack's own secure infrastructure on AWS. Customer data stays inside Slack's trust boundary when it's processed by AI — it isn't sent to the open internet or kept by third-party model providers.</p>",
+    keywords: ["host", "hosted", "hosting", "where", "leave", "leaves", "third", "party", "openai", "anthropic", "aws", "infrastructure", "boundary", "provider", "vpc", "llm", "model"], source: TRUST + "/data-management/privacy-principles" },
+  { id: "ai-permissions", category: "AI security", title: "Can AI (or Slackbot) see data I'm not allowed to see?",
+    answer: "<p><strong>No.</strong> Slack AI and Slackbot respect your existing permissions. They only use content the person asking can already access — for example, private channels they're not in are never used in their answers or summaries.</p><p>The same applies to enterprise search: results from connected apps follow the permissions in those source systems.</p>",
+    keywords: ["permission", "permissions", "access", "see", "private", "channel", "channels", "slackbot", "allowed", "restricted", "leak", "visibility", "rbac", "oversharing"], source: TRUST + "/data-management/privacy-principles" },
+  { id: "ai-retention", category: "AI security", title: "How long is AI output (summaries, answers) stored?",
+    answer: "<p>AI-generated content follows Slack's data handling and your organisation's settings. Summaries and answers are generated from content in your workspace, and Slack's retention and deletion settings continue to apply to the underlying messages and files. AI does not create a separate long-term copy of your data for model providers.</p>",
+    keywords: ["retain", "retention", "stored", "store", "storage", "long", "keep", "kept", "delete", "summary", "summaries", "output", "ai"], source: TRUST + "/data-management" },
+  { id: "ai-admin", category: "AI security", title: "Can admins control or turn off AI features?",
+    answer: "<p>Yes. Admins and owners can manage which AI features are available in their organisation, including turning features on or off for the whole org or for specific groups. On some plans, owners can also decide whether newly released AI features are switched on automatically.</p>",
+    keywords: ["admin", "admins", "disable", "turn", "off", "control", "controls", "opt", "out", "enable", "manage", "switch", "govern", "governance", "ai"], source: "https://slack.com/help" },
+  { id: "ai-agents", category: "AI security", title: "How do connected apps and agents (MCP, Agentforce) handle our data?",
+    answer: "<p>Slackbot and agents can work with connected apps (for example via MCP or Salesforce). Apps and agents must be installed and approved according to your organisation's app management settings, and they act within the permissions granted to them and to the person using them. Admins can review, approve or restrict apps.</p>",
+    keywords: ["mcp", "agent", "agents", "agentforce", "connected", "app", "apps", "integration", "integrations", "third", "party", "salesforce", "connector"], source: TRUST + "/security" },
+
+  // --- Data protection ---
+  { id: "encryption", category: "Data protection", title: "How is data encrypted?",
+    answer: "<p>Data is encrypted <strong>at rest</strong> (AES-256) and <strong>in transit</strong> (TLS 1.2 or higher) on every Slack plan.</p><p>Organisations that want more control can add <strong>Slack Enterprise Key Management (EKM)</strong> to use their own encryption keys.</p>",
+    keywords: ["encrypt", "encrypted", "encryption", "aes", "tls", "rest", "transit", "keys", "cryptography", "secure"], source: TRUST + "/security" },
+  { id: "ekm", category: "Data protection", title: "What is Slack EKM (Enterprise Key Management)?",
+    answer: "<p>Slack EKM lets you manage your own encryption keys in AWS Key Management Service (KMS). You control access to your keys, can revoke them at a granular level (e.g. a single channel or time range) and get detailed activity logs on key usage. EKM is a paid add-on.</p>",
+    keywords: ["ekm", "key", "keys", "kms", "byok", "own", "revoke", "management", "encryption"], source: TRUST + "/security" },
+  { id: "residency", category: "Data protection", title: "Where is our data stored? Is data residency available?",
+    answer: "<p>Data residency lets you choose the region where certain data at rest (like messages and files) is stored. It's available on <strong>Business+ and Enterprise+</strong>.</p><p>Regions include the US, EU, UK, Germany, France, Switzerland, Canada, Australia, Japan, India and South Korea.</p>",
+    keywords: ["residency", "region", "regions", "where", "stored", "location", "country", "eu", "europe", "uk", "germany", "sovereignty", "local", "datacenter", "data", "center"], source: TRUST + "/data-management/data-residency" },
+  { id: "dlp", category: "Data protection", title: "Does Slack offer data loss prevention (DLP)?",
+    answer: "<p>Yes. On <strong>Business+ and Enterprise+</strong>, native DLP lets admins set rules that detect sensitive information (like card numbers or ID numbers) in messages and files, and automatically alert, hide or remove it. Slack also integrates with third-party DLP tools.</p>",
+    keywords: ["dlp", "loss", "prevention", "sensitive", "pii", "leak", "leakage", "credit", "card", "detect", "scan"], source: TRUST + "/security" },
+  { id: "retention", category: "Data protection", title: "Can we set data retention and deletion policies?",
+    answer: "<p>Yes. Admins can set custom retention policies for messages and files across the workspace, per channel or for DMs. Free plans can retain data for up to one year; paid plans default to unlimited retention, which you can shorten. When data is deleted it's removed from Slack's production systems.</p>",
+    keywords: ["retention", "retain", "delete", "deletion", "policy", "policies", "purge", "erase", "keep", "how", "long"], source: TRUST + "/data-management" },
+
+  // --- Compliance ---
+  { id: "certs", category: "Compliance", title: "Which certifications and audits does Slack have?",
+    answer: "<p>Slack is independently audited and certified, including:</p><ul><li>ISO/IEC 27001, 27017, 27018 and 27701</li><li>SOC 2 Type II and SOC 3 reports</li><li>FedRAMP Moderate (GovSlack supports higher US government requirements)</li><li>CSA STAR and IRAP (Australia)</li></ul><p>Reports such as SOC 2 can be requested through your account team under NDA.</p>",
+    keywords: ["certification", "certifications", "certified", "iso", "27001", "soc", "soc2", "audit", "audits", "attestation", "fedramp", "compliance", "compliant", "report", "standards", "irap", "star"], source: TRUST + "/compliance" },
+  { id: "gdpr", category: "Compliance", title: "Is Slack GDPR compliant?",
+    answer: "<p>Yes. Slack supports GDPR compliance with a Data Processing Addendum (DPA), Standard Contractual Clauses for international transfers, a published list of sub-processors, and tools to help you respond to data subject requests (access, export and deletion). Data residency in the EU is available on Business+ and Enterprise+.</p>",
+    keywords: ["gdpr", "privacy", "dpa", "europe", "eu", "personal", "data", "subject", "request", "dsar", "scc", "transfer", "processor", "subprocessor", "subprocessors"], source: TRUST + "/privacy" },
+  { id: "hipaa", category: "Compliance", title: "Can we use Slack with health data (HIPAA)?",
+    answer: "<p>Yes, on <strong>Business+ and Enterprise+</strong>. Covered entities and business associates can sign a Business Associate Agreement (BAA) with Slack and configure Slack to support HIPAA requirements. Protected health information should not be shared on plans without a BAA.</p>",
+    keywords: ["hipaa", "health", "phi", "medical", "baa", "healthcare", "patient"], source: TRUST + "/compliance" },
+  { id: "fedramp", category: "Compliance", title: "Does Slack support government / FedRAMP requirements?",
+    answer: "<p>Slack is FedRAMP Moderate authorised. For US public sector organisations with stricter requirements, <strong>GovSlack</strong> runs in AWS GovCloud and supports FedRAMP High, DoD IL4 and ITAR.</p>",
+    keywords: ["fedramp", "government", "gov", "govslack", "public", "sector", "itar", "dod", "federal", "govcloud"], source: TRUST + "/compliance" },
+  { id: "ediscovery", category: "Compliance", title: "Do you support eDiscovery and legal holds?",
+    answer: "<p>Yes, on <strong>Business+ and Enterprise+</strong>. Legal holds preserve messages and files for specific people, even if they're edited or deleted. The Discovery API lets you connect eDiscovery and archiving tools to export and review Slack data.</p>",
+    keywords: ["ediscovery", "discovery", "legal", "hold", "holds", "litigation", "archive", "archiving", "export", "investigation", "api"], source: TRUST + "/compliance" },
+  { id: "finra", category: "Compliance", title: "Is Slack suitable for regulated industries like financial services?",
+    answer: "<p>Yes. Slack supports regulated industries with features such as the Discovery API for archiving (to help meet FINRA and SEC record-keeping rules), legal holds, DLP, information barriers, audit logs and EKM. Many of these are available on Business+ and Enterprise+.</p>",
+    keywords: ["finra", "sec", "financial", "finance", "bank", "banking", "regulated", "industry", "industries", "insurance"], source: TRUST + "/compliance" },
+
+  // --- Identity & access ---
+  { id: "sso", category: "Identity & access", title: "Do you support SSO and SCIM?",
+    answer: "<p>Yes. <strong>SAML-based SSO</strong> works with identity providers like Okta, Microsoft Entra ID and Google. Free uses Google OAuth; Pro and Business+ support SAML; Enterprise+ supports multiple SAML providers.</p><p><strong>SCIM</strong> provisioning (automatic creation and removal of users) is available on Pro and up.</p>",
+    keywords: ["sso", "saml", "okta", "azure", "entra", "single", "sign", "login", "idp", "identity", "scim", "provisioning", "deprovisioning", "google"], source: TRUST + "/security" },
+  { id: "mfa", category: "Identity & access", title: "Is two-factor authentication supported?",
+    answer: "<p>Yes, on every plan. Admins can require two-factor authentication for everyone in the workspace, and set session duration limits so people have to sign in again after a set time.</p>",
+    keywords: ["2fa", "mfa", "two", "factor", "multi", "authentication", "session", "duration", "timeout", "password"], source: TRUST + "/security" },
+  { id: "devices", category: "Identity & access", title: "Can we manage mobile devices and downloads?",
+    answer: "<p>Yes. Every plan includes native device controls, such as blocking jailbroken devices, blocking file downloads and preventing message copying on mobile. <strong>Business+ and Enterprise+</strong> add EMM integration (e.g. Microsoft Intune, VMware Workspace ONE) for managed devices.</p>",
+    keywords: ["device", "devices", "mobile", "emm", "mdm", "intune", "jailbroken", "download", "downloads", "phone", "byod"], source: TRUST + "/security" },
+  { id: "barriers", category: "Identity & access", title: "Can we stop certain groups from talking to each other?",
+    answer: "<p>Yes — <strong>information barriers</strong> (Business+ and Enterprise+) prevent specified groups from messaging each other, joining the same channels or huddles. This is common in financial services and legal for conflict-of-interest rules.</p>",
+    keywords: ["information", "barrier", "barriers", "ethical", "wall", "separate", "groups", "conflict", "prevent", "block"], source: TRUST + "/compliance" },
+
+  // --- Monitoring & operations ---
+  { id: "audit", category: "Monitoring & operations", title: "Do you provide audit logs?",
+    answer: "<p>Yes. Access logs are on every plan. Audit logs (Pro and up) record actions such as sign-ins, changes to settings and file downloads, and can be sent to SIEM tools like Splunk via the Audit Logs API.</p>",
+    keywords: ["audit", "log", "logs", "siem", "splunk", "monitor", "monitoring", "activity", "track", "events"], source: TRUST + "/security" },
+  { id: "anomaly", category: "Monitoring & operations", title: "How does Slack detect and respond to threats?",
+    answer: "<p>Slack has a dedicated security team monitoring its systems 24/7, plus regular third-party penetration tests and a public bug bounty programme. On <strong>Enterprise+</strong>, <em>anomaly event response</em> can automatically end sessions when unusual activity is detected (such as access from an unexpected location or a Tor exit node).</p>",
+    keywords: ["threat", "threats", "anomaly", "detect", "detection", "incident", "attack", "breach", "pentest", "penetration", "bug", "bounty", "monitor", "response", "vulnerability"], source: TRUST + "/security" },
+  { id: "incident", category: "Monitoring & operations", title: "What happens if there's a security incident?",
+    answer: "<p>Slack has a documented incident response process. If a security incident affects customer data, Slack notifies affected customers as required by its contracts and applicable law (such as GDPR's notification requirements).</p>",
+    keywords: ["incident", "breach", "notify", "notification", "response", "compromise", "hacked"], source: TRUST + "/security" },
+  { id: "uptime", category: "Monitoring & operations", title: "What's Slack's uptime and where can we check status?",
+    answer: "<p>Slack's real-time service status and incident history are published at <a href=\"https://slack-status.com\" target=\"_blank\" rel=\"noopener\">slack-status.com</a>. Enterprise plans include a financially backed uptime SLA — ask your account team for the terms in your contract.</p>",
+    keywords: ["uptime", "sla", "availability", "status", "outage", "downtime", "reliable", "reliability"], source: "https://slack-status.com" },
+  { id: "connect", category: "Monitoring & operations", title: "Is Slack Connect (external collaboration) secure?",
+    answer: "<p>Yes. Each organisation in a Slack Connect channel keeps control of its own data and settings — its own retention, DLP and EKM policies apply to its messages. Admins can approve or restrict which external organisations people connect with.</p>",
+    keywords: ["connect", "external", "partner", "partners", "vendor", "vendors", "guest", "guests", "shared", "channel", "outside", "customer"], source: TRUST + "/security" },
+];
+
+// =====================================================================
+// STATE
+// =====================================================================
+const state = {
+  page: "plans",
+  selected: new Set(["pro", "business"]),
+  currency: "EUR",
+  billing: "annual",
+  seats: 50,
+  diffOnly: false,
+  query: "",
+  collapsed: new Set(),
+};
+
+const money = n => {
+  const c = CURRENCIES[state.currency];
+  return new Intl.NumberFormat(c.locale, { style: "currency", currency: c.code,
+    minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 }).format(n);
+};
+const selectedPlans = () => PLANS.filter(p => state.selected.has(p.id));
+const priceOf = p => p.price[state.currency][state.billing];
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+// =====================================================================
+// RENDER — plans
+// =====================================================================
+function planCardHtml(p) {
+  const price = priceOf(p);
+  const priceHtml = price === null
+    ? `Custom <small>· contact sales</small>`
+    : price === 0 ? `${money(0)} <small>forever</small>`
+    : `${money(price)} <small>/ user / month</small>`;
+  const sel = state.selected.has(p.id);
+  return `
+    <div class="plan-card ${sel ? "selected" : ""} ${p.legacy ? "legacy" : ""}" data-id="${p.id}" style="--plan-color:${p.color}" role="checkbox" aria-checked="${sel}" tabindex="0">
+      <span class="check">✓</span>
+      <h3>${p.name}</h3>
+      <p class="tagline">${p.tagline}</p>
+      <div class="price">${priceHtml}</div>
+      ${p.badge ? `<span class="badge">${p.badge}</span>` : ""}
+      ${p.legacy ? `<span class="badge legacy-badge">Legacy · no longer sold</span>` : ""}
+    </div>`;
+}
+
+function renderPicker() {
+  document.getElementById("planPickerCurrent").innerHTML = PLANS.filter(p => !p.legacy).map(planCardHtml).join("");
+  document.getElementById("planPickerLegacy").innerHTML = PLANS.filter(p => p.legacy).map(planCardHtml).join("");
+}
+
+function renderCosts() {
+  document.getElementById("costRow").innerHTML = selectedPlans().map(p => {
+    const price = priceOf(p);
+    let amount, sub;
+    if (price === null) {
+      amount = "Custom quote";
+      sub = state.billing === "monthly" && p.price[state.currency].annual !== null
+        ? "Annual billing only"
+        : "Pricing via Slack sales";
+    } else {
+      const monthly = price * state.seats;
+      amount = `${money(monthly)} / mo`;
+      sub = `${money(monthly * 12)} per year · ${state.seats} seat${state.seats === 1 ? "" : "s"}`;
+    }
+    return `<div class="cost-tile" style="--plan-color:${p.color}">
+      <div class="name">${p.name}</div>
+      <div class="amount">${amount}</div>
+      <div class="sub">${sub}</div>
+    </div>`;
+  }).join("");
+}
+
+function cellHtml(v) {
+  if (v === true) return `<span class="yes" title="Included">✓</span>`;
+  if (v === false) return `<span class="no" title="Not included">—</span>`;
+  if (v === "addon") return `<span class="addon">Add-on</span>`;
+  if (v === "trial") return `<span class="trial">Trial</span>`;
+  return `<span class="text-val">${v}</span>`;
+}
+
+function headHtml(plans) {
+  return `<tr><th>Feature</th>${plans.map(p =>
+    `<th class="plan-col" style="--plan-color:${p.color}">${p.name.replace(" (legacy)", "")}${p.legacy ? `<span class="legacy-tag">Legacy</span>` : ""}</th>`).join("")}</tr>`;
+}
+
+// Renders a grouped comparison table. opts.filter enables diff/search filtering.
+function renderGroupedTable(tableId, groups, opts = {}) {
+  const plans = selectedPlans();
+  const idx = plans.map(p => PLANS.indexOf(p));
+  const thead = document.querySelector(`#${tableId} thead`);
+  const tbody = document.querySelector(`#${tableId} tbody`);
+  thead.innerHTML = headHtml(plans);
+
+  const q = opts.filter ? state.query.trim().toLowerCase() : "";
+  let rows = "", visible = 0;
+
+  for (const cat of groups) {
+    const items = cat.items.filter(f => {
+      if (!opts.filter) return true;
+      const isDiff = new Set(idx.map(i => JSON.stringify(f.values[i]))).size > 1;
+      if (state.diffOnly && !isDiff) return false;
+      if (q && !(f.name + " " + (f.desc || "") + " " + cat.category).toLowerCase().includes(q)) return false;
+      return true;
+    });
+    if (!items.length) continue;
+    visible += items.length;
+    const key = tableId + ":" + cat.category;
+    const collapsed = state.collapsed.has(key);
+
+    rows += `<tr class="category ${collapsed ? "collapsed" : ""}" data-cat="${key}">
+      <td colspan="${plans.length + 1}"><span class="chev">▾</span>${cat.category} <span style="font-weight:500;opacity:.7">(${items.length})</span></td></tr>`;
+    if (collapsed) continue;
+
+    for (const f of items) {
+      const vals = idx.map(i => f.values[i]);
+      const isDiff = new Set(vals.map(v => JSON.stringify(v))).size > 1;
+      rows += `<tr class="feature ${isDiff ? "diff" : ""}">
+        <td><span class="feat-name">${f.name}</span>${f.desc ? `<span class="feat-desc">${f.desc}</span>` : ""}</td>
+        ${vals.map(v => `<td class="val">${cellHtml(v)}</td>`).join("")}
+      </tr>`;
+    }
+  }
+  tbody.innerHTML = rows;
+  return visible;
+}
+
+function renderTable() {
+  const empty = document.getElementById("emptyState");
+  const table = document.getElementById("compareTable");
+  if (selectedPlans().length < 2) {
+    table.hidden = true;
+    empty.hidden = false;
+    empty.textContent = "Select at least two plans above to compare them.";
+    return;
+  }
+  table.hidden = false;
+  const visible = renderGroupedTable("compareTable", FEATURES, { filter: true });
+  empty.hidden = visible > 0;
+  if (!visible) empty.textContent = state.diffOnly
+    ? "No differences match your filters — these plans are identical here."
+    : "No features match your search.";
+}
+
+// =====================================================================
+// RENDER — Slackbot
+// =====================================================================
+function renderSlackbot() {
+  const plans = selectedPlans().length ? selectedPlans() : PLANS.filter(p => !p.legacy);
+  document.getElementById("botHero").innerHTML = plans.map(p => {
+    const a = SLACKBOT_ACCESS[PLANS.indexOf(p)];
+    return `<div class="bot-tile" style="--plan-color:${p.color}">
+      <div class="name">${p.name}</div>
+      <div class="access">${a.access}</div>
+      <p>${a.text}</p>
+    </div>`;
+  }).join("");
+  renderGroupedTable("botTable", SLACKBOT_FEATURES);
+}
+
+// =====================================================================
+// SECURITY — docs + Q&A assistant
+// =====================================================================
+const STOPWORDS = new Set("a an the is are was were be been do does did can could should would will i we our us you your my me it its of to in on for with and or but if how what which who whom when where why this that these those there any about from by at as into than then so not no yes have has had get got slack please tell know".split(" "));
+const SYNONYMS = {
+  encrypted: "encryption", encrypt: "encryption", encrypting: "encryption",
+  trained: "training", trains: "training", train: "training", learns: "learn",
+  certified: "certification", certifications: "certification", certificate: "certification", certificates: "certification",
+  compliant: "compliance", comply: "compliance",
+  stored: "store", storing: "store", stores: "store",
+  permissions: "permission", permitted: "permission",
+  logs: "log", logging: "log",
+  devices: "device", phones: "phone",
+  models: "model", llms: "llm", gpt: "llm", chatgpt: "llm", genai: "ai", artificial: "ai", intelligence: "ai",
+  regions: "region", countries: "country",
+  deleted: "deletion", delete: "deletion", deleting: "deletion",
+  retained: "retention", retain: "retention",
+  agents: "agent", apps: "app", integrations: "integration",
+  europe: "eu", european: "eu",
+};
+
+function tokenize(text) {
+  return text.toLowerCase().replace(/[^a-z0-9+\s]/g, " ").split(/\s+/)
+    .filter(t => t && !STOPWORDS.has(t))
+    .map(t => SYNONYMS[t] || t);
+}
+
+const KB_INDEX = KB.map(e => ({
+  entry: e,
+  kw: new Set(e.keywords.map(k => SYNONYMS[k] || k)),
+  title: new Set(tokenize(e.title)),
+  body: new Set(tokenize(e.answer.replace(/<[^>]+>/g, " "))),
+}));
+
+function search(question) {
+  const tokens = tokenize(question);
+  if (!tokens.length) return [];
+  return KB_INDEX.map(ix => {
+    let score = 0;
+    for (const t of tokens) {
+      if (ix.kw.has(t)) score += 3;
+      if (ix.title.has(t)) score += 2;
+      if (ix.body.has(t)) score += 0.5;
+      // partial match for longer words (e.g. "residen" -> residency)
+      else if (t.length > 4 && [...ix.kw].some(k => k.startsWith(t) || t.startsWith(k))) score += 1;
+    }
+    return { entry: ix.entry, score };
+  }).filter(r => r.score >= 3).sort((a, b) => b.score - a.score);
+}
+
+const chatLog = () => document.getElementById("chatLog");
+function addMsg(html, who) {
+  const div = document.createElement("div");
+  div.className = "msg " + who;
+  div.innerHTML = html;
+  chatLog().appendChild(div);
+  chatLog().scrollTop = chatLog().scrollHeight;
+}
+const chipsHtml = entries => `<div class="chips">${entries.map(e =>
+  `<button class="chip" data-kb="${e.id}">${e.title}</button>`).join("")}</div>`;
+const srcHtml = e => `<div class="src">Source: <a href="${e.source}" target="_blank" rel="noopener">${e.source.replace("https://", "")}</a></div>`;
+
+function answer(question) {
+  addMsg(esc(question), "user");
+  const results = search(question);
+  if (!results.length) {
+    addMsg(`<p>I couldn't find that in the security documentation. Try rephrasing, pick one of these topics, or contact your Slack account team for a detailed answer.</p>
+      ${chipsHtml(KB.filter(e => ["ai-training", "encryption", "residency", "certs", "gdpr"].includes(e.id)))}`, "bot");
+    return;
+  }
+  const [top, ...rest] = results;
+  const related = rest.slice(0, 3).map(r => r.entry);
+  addMsg(`<h4>${top.entry.title}</h4>${top.entry.answer}${srcHtml(top.entry)}
+    ${related.length ? `<div class="src" style="margin-top:10px">Related:</div>${chipsHtml(related)}` : ""}`, "bot");
+}
+
+function showEntry(id) {
+  const e = KB.find(k => k.id === id);
+  addMsg(esc(e.title), "user");
+  addMsg(`<h4>${e.title}</h4>${e.answer}${srcHtml(e)}`, "bot");
+}
+
+function renderSecurity() {
+  document.getElementById("certs").innerHTML = CERTS.map(c => `<span class="cert">${c}</span>`).join("");
+  const cats = [...new Set(KB.map(e => e.category))];
+  document.getElementById("docList").innerHTML = cats.map(cat => `
+    <div class="doc-cat">${cat}</div>
+    ${KB.filter(e => e.category === cat).map(e => `
+      <details class="doc"><summary>${e.title}</summary><div class="body">${e.answer}${srcHtml(e)}</div></details>`).join("")}
+  `).join("");
+  addMsg(`<p>Hi! Ask me anything about Slack security, privacy, compliance or AI data handling. Popular questions:</p>
+    ${chipsHtml(KB.filter(e => ["ai-training", "ai-permissions", "residency", "certs", "hipaa"].includes(e.id)))}`, "bot");
+}
+
+// =====================================================================
+// PAGES & EVENTS
+// =====================================================================
+function showPage(page) {
+  if (!["plans", "slackbot", "security"].includes(page)) page = "plans";
+  state.page = page;
+  document.querySelectorAll("section.page").forEach(s => s.classList.toggle("active", s.id === "page-" + page));
+  document.querySelectorAll("#tabs a").forEach(a => a.classList.toggle("active", a.dataset.page === page));
+  document.getElementById("controls").hidden = page === "security";
+  document.querySelectorAll(".plans-only").forEach(el => el.style.display = page === "plans" ? "" : "none");
+  if (page === "slackbot") renderSlackbot();
+}
+window.addEventListener("hashchange", () => showPage(location.hash.slice(1)));
+
+function renderAll() { renderPicker(); renderCosts(); renderTable(); if (state.page === "slackbot") renderSlackbot(); }
+
+function togglePlan(id) {
+  state.selected.has(id) ? state.selected.delete(id) : state.selected.add(id);
+  renderAll();
+}
+for (const id of ["planPickerCurrent", "planPickerLegacy"]) {
+  const el = document.getElementById(id);
+  el.addEventListener("click", e => { const c = e.target.closest(".plan-card"); if (c) togglePlan(c.dataset.id); });
+  el.addEventListener("keydown", e => {
+    const c = e.target.closest(".plan-card");
+    if (c && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); togglePlan(c.dataset.id); }
+  });
+}
+
+function bindToggle(groupId, key, attr) {
+  const group = document.getElementById(groupId);
+  const sync = () => group.querySelectorAll("button").forEach(b => b.classList.toggle("active", b.dataset[attr] === state[key]));
+  group.addEventListener("click", e => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    state[key] = btn.dataset[attr];
+    sync();
+    renderAll();
+  });
+  sync();
+}
+bindToggle("currencyToggle", "currency", "currency");
+bindToggle("billingToggle", "billing", "billing");
+
+document.getElementById("seats").addEventListener("input", e => {
+  state.seats = Math.max(1, parseInt(e.target.value, 10) || 1);
+  renderCosts();
+});
+document.getElementById("diffOnly").addEventListener("change", e => { state.diffOnly = e.target.checked; renderTable(); });
+document.getElementById("search").addEventListener("input", e => { state.query = e.target.value; renderTable(); });
+
+for (const id of ["compareTable", "botTable"]) {
+  document.querySelector(`#${id} tbody`).addEventListener("click", e => {
+    const row = e.target.closest("tr.category");
+    if (!row) return;
+    const c = row.dataset.cat;
+    state.collapsed.has(c) ? state.collapsed.delete(c) : state.collapsed.add(c);
+    id === "compareTable" ? renderTable() : renderSlackbot();
+  });
+}
+
+document.getElementById("chatForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const input = document.getElementById("chatInput");
+  const q = input.value.trim();
+  if (!q) return;
+  input.value = "";
+  answer(q);
+});
+document.getElementById("chatLog").addEventListener("click", e => {
+  const chip = e.target.closest(".chip");
+  if (chip) showEntry(chip.dataset.kb);
+});
+
+renderAll();
+renderSecurity();
+showPage(location.hash.slice(1) || "plans");
+</script>
+</body>
+</html>
