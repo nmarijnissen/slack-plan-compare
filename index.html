@@ -154,6 +154,32 @@
   .bot-tile .access { font-size: 1.15rem; font-weight: 800; margin: 4px 0; }
   .bot-tile p { margin: 0; font-size: .84rem; color: var(--muted); }
 
+  /* Use cases */
+  .uc-ask { margin-bottom: 18px; }
+  .uc-ask label { display: block; margin-bottom: 8px; }
+  .uc-ask-row { display: flex; gap: 10px; }
+  .uc-ask textarea { flex: 1; font: inherit; font-size: .95rem; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; resize: vertical; }
+  .uc-ask-row button { font: inherit; font-weight: 700; border: 0; border-radius: 10px; padding: 0 20px; background: var(--green); color: #fff; cursor: pointer; }
+  .uc-ask .chips { margin-top: 10px; }
+  .uc-lobs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .uc-lobs button { font: inherit; font-size: .85rem; padding: 6px 13px; border-radius: 99px; border: 1px solid var(--border); background: #fff; cursor: pointer; color: var(--text); }
+  .uc-lobs button.active { background: var(--aubergine); border-color: var(--aubergine); color: #fff; }
+  .uc-summary { background: #f3eff3; border-radius: var(--radius); padding: 12px 16px; margin-bottom: 16px; font-size: .9rem; }
+  .uc-summary strong { color: var(--aubergine); }
+  .uc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+  .uc-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+  .uc-card .uc-top { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+  .uc-card .lob { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .uc-card h3 { margin: 2px 0 0; font-size: 1.05rem; }
+  .uc-card p { margin: 0; font-size: .88rem; color: #333; }
+  .uc-card ol { margin: 0; padding-left: 18px; font-size: .85rem; color: #333; }
+  .uc-card ol li { margin-bottom: 3px; }
+  .uc-card .prompt { font-size: .84rem; background: #f4f2f5; border-left: 3px solid var(--aubergine); border-radius: 6px; padding: 8px 10px; }
+  .uc-card .prompt span { display: block; font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-bottom: 2px; }
+  .uc-card .feats { display: flex; flex-wrap: wrap; gap: 5px; margin-top: auto; }
+  .uc-card .feat { font-size: .72rem; padding: 2px 8px; border-radius: 6px; background: #f3f3f5; color: var(--muted); }
+  .plan-pill { flex-shrink: 0; font-size: .72rem; font-weight: 700; padding: 3px 9px; border-radius: 99px; color: #fff; background: var(--plan-color); white-space: nowrap; }
+
   /* Security */
   .sec-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 20px; align-items: start; }
   @media (max-width: 900px) { .sec-grid { grid-template-columns: 1fr; } }
@@ -212,6 +238,7 @@
     <a href="#plans" data-page="plans">Plans</a>
     <a href="#pricing" data-page="pricing">Pricing</a>
     <a href="#slackbot" data-page="slackbot">Slackbot</a>
+    <a href="#usecases" data-page="usecases">Use cases</a>
     <a href="#security" data-page="security">Security &amp; compliance</a>
   </nav>
 </header>
@@ -268,12 +295,32 @@
   <!-- ============ SLACKBOT ============ -->
   <section class="page" id="page-slackbot">
     <h2>Slackbot across plans</h2>
-    <p class="lead">Slackbot is Slack's personal AI agent. It understands your conversations, files and connected apps, and can answer questions, draft content, build workflows and take action. How much you can use it depends on the plan. This view uses the plans you've selected on the Plans tab.</p>
+    <p class="lead">Slackbot is Slack's personal AI agent. It understands your conversations, files and connected apps, and can answer questions, draft content, build workflows and take action. How much you can use it depends on the plan. All current plans are shown; legacy plans appear when you select them on the Plans tab.</p>
     <div class="bot-hero" id="botHero"></div>
     <div class="table-wrap">
       <table id="botTable"><thead></thead><tbody></tbody></table>
     </div>
     <p class="note">Source: <a href="https://slack.com/features/slackbot" target="_blank" rel="noopener">slack.com/features/slackbot</a> and <a href="https://slack.com/pricing" target="_blank" rel="noopener">slack.com/pricing</a>. Usage limits can change; "Trial" means Free and Pro workspaces get a limited number of included Slackbot conversations. Legacy plans don't include the Slackbot agent — some AI features were available through the legacy Slack AI add-on.</p>
+  </section>
+
+  <!-- ============ USE CASES ============ -->
+  <section class="page" id="page-usecases">
+    <h2>Use cases</h2>
+    <p class="lead">See how teams use Slack in practice. Describe what you want to achieve, or browse by line of business — each use case shows the Slack features involved and the plan you need.</p>
+
+    <form class="uc-ask panel" id="ucForm" autocomplete="off">
+      <label for="ucInput"><strong>What would you like to achieve?</strong></label>
+      <div class="uc-ask-row">
+        <textarea id="ucInput" rows="2" placeholder="e.g. Our support team wants to resolve escalations faster and keep account managers in the loop"></textarea>
+        <button type="submit">Find use cases</button>
+      </div>
+      <div class="chips" id="ucExamples"></div>
+    </form>
+
+    <div class="uc-lobs" id="ucLobs"></div>
+    <div id="ucSummary"></div>
+    <div class="uc-grid" id="ucGrid"></div>
+    <p class="note">Use cases are matched from a curated library based on the words you use. The plan shown is the lowest current plan that includes every feature in the use case, based on the Plans tab.</p>
   </section>
 
   <!-- ============ SECURITY ============ -->
@@ -430,7 +477,7 @@ const SLACKBOT_ACCESS = [
   { access: "Limited trial", text: "A set of included Slackbot conversations to try it out." },
   { access: "Limited trial", text: "A set of included Slackbot conversations to try it out." },
   { access: "Ongoing access", text: "Slackbot for every member, with a weekly message limit per user." },
-  { access: "Unlimited", text: "Unlimited Slackbot, plus enterprise search across connected systems." },
+  { access: "Unlimited", text: "Unlimited Slackbot for every member, enterprise search across connected apps and systems, and control over exactly which people and groups can use AI." },
   { access: "Not included", text: "No Slackbot agent. Summaries and huddle notes are included; recaps, AI search and other AI features came with the legacy Slack AI add-on." },
   { access: "Not included", text: "No Slackbot agent. Summaries and huddle notes are included; recaps, AI search and other AI features came with the legacy Slack AI add-on." },
 ];
@@ -442,7 +489,7 @@ const SLACKBOT_FEATURES = [
   { category: "Ask & find", items: [
     { name: "Ask questions about your conversations & files", desc: "Rich answers grounded in what you already have access to", values: ["trial", "trial", true, true, false, false] },
     { name: "Search & summarise channels and threads", values: ["trial", "trial", true, true, false, false] },
-    { name: "Deep research", desc: "Multi-step research across Slack and connected sources", values: [false, false, true, true, false, false] },
+    { name: "Deep research", desc: "Full reports with citations from your Slack history, connected apps and the web", values: [false, false, true, true, false, false] },
     { name: "Enterprise search", desc: "Find answers across connected apps, databases and systems", values: [false, false, false, true, false, false] },
   ]},
   { category: "Create", items: [
@@ -457,7 +504,11 @@ const SLACKBOT_FEATURES = [
   ]},
   { category: "Personalise", items: [
     { name: "Memory", desc: "Remembers your preferences and context over time", values: [false, false, true, true, false, false] },
-    { name: "Skills", desc: "Reusable instructions Slackbot can follow", values: [false, false, true, true, false, false] },
+    { name: "Skills", desc: "Turn your best workflows into skills the whole team can run in one click", values: [false, false, true, true, false, false] },
+  ]},
+  { category: "Trust & governance", items: [
+    { name: "Inherits your permissions; data never used to train AI", values: [true, true, true, true, false, false] },
+    { name: "Control who can use AI features", desc: "Admins choose which AI features are available", values: [false, "Everyone or no one", "Everyone or no one", "Specific people & groups", "Everyone or no one", "Specific people & groups"] },
   ]},
 ];
 
@@ -659,7 +710,7 @@ function headHtml(plans) {
 
 // Renders a grouped comparison table. opts.filter enables diff/search filtering.
 function renderGroupedTable(tableId, groups, opts = {}) {
-  const plans = selectedPlans();
+  const plans = opts.plans || selectedPlans();
   const idx = plans.map(p => PLANS.indexOf(p));
   const thead = document.querySelector(`#${tableId} thead`);
   const tbody = document.querySelector(`#${tableId} tbody`);
@@ -719,7 +770,8 @@ function renderTable() {
 // RENDER — Slackbot
 // =====================================================================
 function renderSlackbot() {
-  const plans = selectedPlans().length ? selectedPlans() : PLANS.filter(p => !p.legacy);
+  // Always show every current plan; legacy plans only when selected on the Plans tab
+  const plans = PLANS.filter(p => !p.legacy || state.selected.has(p.id));
   document.getElementById("botHero").innerHTML = plans.map(p => {
     const a = SLACKBOT_ACCESS[PLANS.indexOf(p)];
     return `<div class="bot-tile" style="--plan-color:${p.color}">
@@ -728,7 +780,7 @@ function renderSlackbot() {
       <p>${a.text}</p>
     </div>`;
   }).join("");
-  renderGroupedTable("botTable", SLACKBOT_FEATURES);
+  renderGroupedTable("botTable", SLACKBOT_FEATURES, { plans });
 }
 
 // =====================================================================
@@ -826,10 +878,364 @@ function renderSecurity() {
 }
 
 // =====================================================================
+// USE CASES — library + natural-language matching
+// =====================================================================
+const LOBS = ["Sales", "Customer service", "Marketing", "IT", "HR", "Finance", "Engineering & product", "Legal & compliance", "Operations", "Leadership"];
+
+// features: exact feature names from FEATURES (used to work out the minimum plan)
+const USE_CASES = [
+  // --- Sales ---
+  { lob: "Sales", title: "Deal rooms connected to Salesforce",
+    summary: "Give every key opportunity its own channel where sales, solution engineers and leadership work the deal together with live Salesforce data.",
+    steps: ["Create a channel per strategic opportunity and link the Salesforce record", "Share record previews and update fields without leaving Slack", "Ask Slackbot for a summary of where the deal stands before each review"],
+    prompt: "Summarise where the Acme renewal stands, what's blocking it and who owns the next step.",
+    features: ["Search, view & edit Salesforce records in Slack", "Salesforce record previews", "Thread & channel summaries", "Ask questions about your conversations & files"],
+    keywords: ["deal", "deals", "opportunity", "pipeline", "close", "closing", "win", "account", "salesforce", "crm", "sales", "renewal", "forecast"] },
+  { lob: "Sales", title: "Live pipeline dashboards",
+    summary: "Turn your pipeline and forecast into a live dashboard inside the team channel, so everyone works from the same numbers.",
+    steps: ["Ask Slackbot to build a pipeline dashboard from Salesforce", "Pin it to the team channel for the weekly forecast call", "Use Sales Home and list views to drill into deals at risk"],
+    prompt: "Build a dashboard of my team's open pipeline this quarter by stage and flag deals with no activity in 14 days.",
+    features: ["Interactive dashboards, reports, polls & calculators", "Salesforce list views", "Sales Home"],
+    keywords: ["pipeline", "forecast", "dashboard", "report", "reporting", "quota", "visibility", "numbers", "kpi", "metrics", "sales", "manager"] },
+  { lob: "Sales", title: "Meeting prep and follow-ups in minutes",
+    summary: "Prepare for customer meetings with a brief built from Slack, Salesforce and the web, then log the call and draft the follow-up.",
+    steps: ["Ask Slackbot for a meeting brief on the account and attendees", "After the call, have Slackbot log notes to Salesforce", "Draft the follow-up email and next steps in one go"],
+    prompt: "Prep me for my 2pm with Globex: recent conversations, open opportunities and anything in the news.",
+    features: ["Deep research", "Salesforce actions", "Draft messages, documents & canvases"],
+    keywords: ["meeting", "meetings", "prep", "prepare", "follow", "followup", "call", "calls", "notes", "admin", "time", "rep", "reps", "productivity"] },
+  { lob: "Sales", title: "Deal desk approvals",
+    summary: "Route discount and non-standard term requests to the right approvers automatically, with the Salesforce record attached.",
+    steps: ["Reps submit a request from a Workflow Builder form", "Conditional branching routes it by discount level or region", "Approvals update the Salesforce opportunity automatically"],
+    prompt: "Create a workflow that sends discount requests over 20% to the regional VP for approval.",
+    features: ["Workflow Builder", "Conditional branching in Workflow Builder", "Salesforce automations in Workflow Builder"],
+    keywords: ["approval", "approvals", "approve", "discount", "pricing", "quote", "deal", "desk", "routing", "process", "automate", "automation"] },
+  { lob: "Sales", title: "Shared channels with customers and partners",
+    summary: "Close faster by working with buyers and partners in a shared Slack Connect channel instead of long email threads.",
+    steps: ["Invite the customer's buying team to a Slack Connect channel", "Share proposals and mutual action plans in a canvas", "Jump into a quick huddle to unblock questions"],
+    prompt: "Draft a mutual action plan canvas for the Initech evaluation with milestones and owners.",
+    features: ["Slack Connect", "Canvases", "Huddles (audio/video)"],
+    keywords: ["customer", "customers", "partner", "partners", "external", "buyer", "buyers", "email", "collaborate", "collaboration", "shared"] },
+
+  // --- Customer service ---
+  { lob: "Customer service", title: "Swarm escalations to resolve cases faster",
+    summary: "Pull the right experts into a dedicated channel for each escalated case, with the Salesforce case and full context in one place.",
+    steps: ["Spin up a channel automatically when a case is escalated", "Bring in engineering, success and the account owner", "Ask Slackbot for the root cause, fix and next steps to share back"],
+    prompt: "Summarise this escalation: customer impact, what we've tried, and the agreed next steps.",
+    features: ["Salesforce automations in Workflow Builder", "Search, view & edit Salesforce records in Slack", "Thread & channel summaries", "Huddles (audio/video)"],
+    keywords: ["escalation", "escalations", "case", "cases", "support", "service", "resolve", "resolution", "ticket", "tickets", "faster", "swarm", "swarming", "incident", "customer"] },
+  { lob: "Customer service", title: "Smart intake and triage",
+    summary: "Capture requests in a consistent format, let AI classify them and route them to the right queue automatically.",
+    steps: ["Collect requests with a Workflow Builder form", "Use an AI step to categorise and prioritise", "Track everything in a shared List with owners and status"],
+    prompt: "Build a workflow that triages incoming requests by urgency and assigns them to the right team.",
+    features: ["Workflow Builder", "AI steps in Workflow Builder", "Conditional branching in Workflow Builder", "Lists"],
+    keywords: ["intake", "triage", "request", "requests", "queue", "route", "routing", "categorise", "prioritise", "priority", "form", "tracking"] },
+  { lob: "Customer service", title: "Support customers in any language",
+    summary: "Help global customers and teams collaborate across languages with built-in translation.",
+    steps: ["Turn on AI translations for global channels", "Use message explanations for unfamiliar jargon", "Share answers back in the customer's language"],
+    prompt: "Translate this customer's message and draft a reply in German.",
+    features: ["AI language translations", "AI message explanations", "Slack Connect"],
+    keywords: ["language", "languages", "translate", "translation", "translations", "global", "international", "multilingual", "german", "french", "spanish"] },
+  { lob: "Customer service", title: "Instant answers from your knowledge base",
+    summary: "Agents ask a question and get an answer with sources from past cases, channels and connected knowledge tools.",
+    steps: ["Connect your knowledge sources to Slack", "Agents ask Slackbot instead of searching multiple tools", "Answers include citations so agents can verify them"],
+    prompt: "How did we fix the SSO login loop issue for enterprise customers last month?",
+    features: ["AI search", "Ask questions about your conversations & files", "Enterprise search"],
+    keywords: ["knowledge", "answers", "answer", "search", "find", "documentation", "kb", "faq", "agents", "information", "onboard"] },
+
+  // --- Marketing ---
+  { lob: "Marketing", title: "Campaign launch hub",
+    summary: "Run every launch from one channel with a launch plan canvas, a task list and automated reminders.",
+    steps: ["Start from a launch template with the brief in a canvas", "Track deliverables, owners and dates in a List", "Automate status check-ins with Workflow Builder"],
+    prompt: "Create a launch plan canvas for our spring campaign with workstreams, owners and dates.",
+    features: ["Canvases", "Lists", "Templates", "Workflow Builder"],
+    keywords: ["campaign", "campaigns", "launch", "launches", "marketing", "plan", "project", "projects", "deliverables", "event", "events"] },
+  { lob: "Marketing", title: "On-brand content in a fraction of the time",
+    summary: "Draft blog posts, emails and social copy using your own templates, past campaigns and brand guidelines.",
+    steps: ["Save your brand voice as a Slackbot skill", "Ask Slackbot to draft content in the campaign channel", "Refine together in a canvas with AI writing assistance"],
+    prompt: "Draft three LinkedIn posts announcing our new product, using our brand voice skill.",
+    features: ["Draft messages, documents & canvases", "AI writing assistance in canvas", "Skills"],
+    keywords: ["content", "write", "writing", "copy", "blog", "social", "brand", "email", "emails", "draft", "creative", "posts"] },
+  { lob: "Marketing", title: "Work with agencies in shared channels",
+    summary: "Replace email chains with agencies and freelancers with shared channels, quick huddles and video clips for feedback.",
+    steps: ["Invite your agency into a Slack Connect channel", "Give feedback on creative with audio/video clips", "Keep approvals and files in one place"],
+    prompt: "Summarise the agency's feedback on the new creative from this week.",
+    features: ["Slack Connect", "Audio & video clips", "Huddles (audio/video)", "Thread & channel summaries"],
+    keywords: ["agency", "agencies", "freelancer", "freelancers", "vendor", "external", "feedback", "creative", "review", "approval"] },
+  { lob: "Marketing", title: "Campaign performance reports on demand",
+    summary: "Ask for a performance report and get an interactive dashboard pulled from your connected marketing tools.",
+    steps: ["Connect your analytics and marketing apps", "Ask Slackbot for a report on any campaign", "Pin the dashboard so the team sees live results"],
+    prompt: "Build a report comparing lead volume and conversion for our last three campaigns.",
+    features: ["Interactive dashboards, reports, polls & calculators", "Work with connected apps"],
+    keywords: ["performance", "report", "reports", "analytics", "roi", "results", "leads", "conversion", "dashboard", "measure", "metrics"] },
+
+  // --- IT ---
+  { lob: "IT", title: "IT helpdesk in Slack",
+    summary: "Employees ask for help where they already work; common questions are answered instantly and the rest becomes a tracked request.",
+    steps: ["Set up a #help-it channel with a request workflow", "Slackbot answers common questions from your IT docs", "Open requests are tracked in a List until resolved"],
+    prompt: "How do I set up VPN on my new laptop?",
+    features: ["Workflow Builder", "AI steps in Workflow Builder", "Lists", "Ask questions about your conversations & files"],
+    keywords: ["it", "helpdesk", "help", "desk", "tickets", "ticket", "laptop", "password", "employees", "self", "service", "requests", "support"] },
+  { lob: "IT", title: "Incident response",
+    summary: "Coordinate outages and incidents in a dedicated channel with your monitoring and ticketing tools connected.",
+    steps: ["Alerts from monitoring tools create an incident channel automatically", "Responders join a huddle; Slackbot keeps a running summary", "Create Jira tickets and post-mortem notes from the channel"],
+    prompt: "Summarise the incident timeline so far and draft a status update for stakeholders.",
+    features: ["Integrations with other apps", "Huddles (audio/video)", "Thread & channel summaries", "Work with connected apps"],
+    keywords: ["incident", "incidents", "outage", "outages", "downtime", "alert", "alerts", "monitoring", "on-call", "oncall", "pagerduty", "status", "postmortem"] },
+  { lob: "IT", title: "Automated access requests and onboarding",
+    summary: "Automate account provisioning and app access requests with approvals and an audit trail.",
+    steps: ["Provision and deprovision users automatically with SCIM", "Employees request app access via a workflow", "Managers approve in Slack; custom steps call your IT systems"],
+    prompt: "Create a workflow for software access requests that needs manager approval.",
+    features: ["SCIM user management", "Workflow Builder", "Custom workflow steps"],
+    keywords: ["access", "provisioning", "provision", "onboarding", "offboarding", "accounts", "permissions", "scim", "identity", "approvals", "software"] },
+  { lob: "IT", title: "Enterprise-grade security and governance",
+    summary: "Meet strict security requirements with your own encryption keys, data loss prevention and full audit logs.",
+    steps: ["Manage encryption keys with Slack EKM", "Prevent sensitive data leaking with native DLP", "Stream audit logs to your SIEM"],
+    prompt: "Which security controls do we need to approve Slack for the whole company?",
+    features: ["Slack EKM (Enterprise Key Management)", "Native data loss prevention (DLP)", "Audit logs", "EMM integration"],
+    keywords: ["security", "secure", "governance", "encryption", "keys", "dlp", "audit", "siem", "ciso", "risk", "control", "controls", "mdm", "device"] },
+
+  // --- HR ---
+  { lob: "HR", title: "Employee onboarding that runs itself",
+    summary: "Welcome new hires with an automated journey: checklists, intros and key resources from day one.",
+    steps: ["Trigger an onboarding workflow when someone joins", "Share a welcome canvas with resources and a 30-60-90 plan", "Track onboarding tasks in a List"],
+    prompt: "Create an onboarding canvas for new sales hires with their first-week schedule.",
+    features: ["Workflow Builder", "Canvases", "Lists", "Templates"],
+    keywords: ["onboarding", "onboard", "new", "hire", "hires", "joiner", "joiners", "welcome", "hr", "people", "employees", "starter"] },
+  { lob: "HR", title: "Instant answers to HR and policy questions",
+    summary: "Employees get answers on leave, benefits and policies straight away, so HR can focus on people.",
+    steps: ["Connect your HR knowledge base and policies", "Employees ask Slackbot in a DM or #ask-hr", "Complex questions are routed to HR with a workflow"],
+    prompt: "How many days of parental leave do I get, and how do I request it?",
+    features: ["AI search", "Ask questions about your conversations & files", "Workflow Builder"],
+    keywords: ["policy", "policies", "benefits", "leave", "holiday", "vacation", "hr", "questions", "handbook", "payroll", "people"] },
+  { lob: "HR", title: "Recruiting coordination",
+    summary: "Coordinate interviewers, agencies and hiring managers, and keep feedback in one place.",
+    steps: ["Create a channel per open role with the hiring team", "Work with recruiting agencies in Slack Connect", "Collect interview feedback with a workflow and huddle notes"],
+    prompt: "Summarise interview feedback for the senior designer candidates.",
+    features: ["Slack Connect", "Workflow Builder", "Huddle notes", "Thread & channel summaries"],
+    keywords: ["recruiting", "recruitment", "hiring", "interview", "interviews", "candidate", "candidates", "talent", "role", "roles"] },
+
+  // --- Finance ---
+  { lob: "Finance", title: "Spend and purchase approvals",
+    summary: "Route purchase requests and expenses to the right approver based on amount and cost centre.",
+    steps: ["Submit requests via a Workflow Builder form", "Conditional branching routes by amount", "Approved requests are pushed to your finance system"],
+    prompt: "Create a purchase request workflow: under 5k goes to the manager, over 5k to finance.",
+    features: ["Workflow Builder", "Conditional branching in Workflow Builder", "Integrations with other apps"],
+    keywords: ["spend", "purchase", "purchasing", "procurement", "expense", "expenses", "budget", "approval", "approvals", "invoice", "invoices", "finance"] },
+  { lob: "Finance", title: "Month-end close tracker",
+    summary: "Run the close with a shared checklist, clear owners and a daily recap of what's still open.",
+    steps: ["Track close tasks and owners in a List", "Keep the close calendar and procedures in a canvas", "Daily recaps show what changed overnight"],
+    prompt: "What's still open for this month's close and who owns it?",
+    features: ["Lists", "Canvases", "Daily recaps"],
+    keywords: ["close", "month", "month-end", "quarter", "checklist", "accounting", "reconciliation", "tasks", "deadline", "finance"] },
+  { lob: "Finance", title: "Financial analysis on demand",
+    summary: "Ask questions about spreadsheets and reports and get a summary or dashboard back.",
+    steps: ["Share the file in a channel or DM", "Ask for a file summary or variance analysis", "Turn the result into an interactive dashboard"],
+    prompt: "Summarise this budget file and show variance by department in a chart.",
+    features: ["File summaries", "Interactive dashboards, reports, polls & calculators", "Deep research"],
+    keywords: ["analysis", "analyse", "analyze", "spreadsheet", "excel", "budget", "variance", "financial", "chart", "data", "numbers"] },
+
+  // --- Engineering & product ---
+  { lob: "Engineering & product", title: "Release coordination",
+    summary: "Coordinate releases across engineering, QA and go-to-market with automated checklists and notifications.",
+    steps: ["CI/CD tools post build and deploy updates to the release channel", "Track release tasks in a List", "Notify sales and support automatically when features ship"],
+    prompt: "Draft release notes from this week's merged changes for the customer success team.",
+    features: ["Integrations with other apps", "Lists", "Workflow Builder", "Draft messages, documents & canvases"],
+    keywords: ["release", "releases", "deploy", "deployment", "ship", "shipping", "engineering", "developers", "ci", "cd", "github", "notes"] },
+  { lob: "Engineering & product", title: "Synthesise customer feedback",
+    summary: "Find patterns in customer feedback across channels, cases and connected tools to inform the roadmap.",
+    steps: ["Ask Slackbot to research feedback on a feature", "Get a cited report from Slack and connected systems", "Share the findings in a canvas with the product team"],
+    prompt: "What are customers saying about our mobile app this quarter? Group the themes with examples.",
+    features: ["Deep research", "AI search", "Enterprise search"],
+    keywords: ["feedback", "customer", "voice", "roadmap", "product", "insights", "themes", "research", "requests", "features"] },
+  { lob: "Engineering & product", title: "Bug triage with Jira",
+    summary: "Turn bug reports in Slack into Jira tickets, and keep the conversation and ticket in sync.",
+    steps: ["Report bugs via a workflow form", "Slackbot creates and updates Jira tickets", "AI steps suggest severity and the owning team"],
+    prompt: "Create a Jira ticket for this bug and assign it to the payments team.",
+    features: ["Work with connected apps", "Build workflows just by asking", "AI steps in Workflow Builder"],
+    keywords: ["bug", "bugs", "jira", "ticket", "tickets", "triage", "engineering", "issue", "issues", "defect", "qa"] },
+
+  // --- Legal & compliance ---
+  { lob: "Legal & compliance", title: "Faster contract reviews",
+    summary: "Review and negotiate contracts with summaries of long documents and e-signature integrated in Slack.",
+    steps: ["Share the draft contract in the deal or legal channel", "Ask for a file summary of key terms and risks", "Send for signature via Docusign from Slack"],
+    prompt: "Summarise the key terms and unusual clauses in this MSA.",
+    features: ["File summaries", "Work with connected apps", "Slack Connect"],
+    keywords: ["contract", "contracts", "legal", "msa", "nda", "terms", "clauses", "docusign", "signature", "review", "negotiation"] },
+  { lob: "Legal & compliance", title: "Ethical walls, legal holds and eDiscovery",
+    summary: "Meet regulatory requirements by separating groups, preserving data and connecting eDiscovery tools.",
+    steps: ["Set information barriers between conflicting groups", "Place legal holds on members during investigations", "Export data to your eDiscovery tool via the Discovery API"],
+    prompt: "Which compliance controls help us meet FINRA record-keeping rules?",
+    features: ["Information barriers", "Legal holds", "Discovery API (eDiscovery)"],
+    keywords: ["compliance", "regulated", "regulation", "regulatory", "legal", "hold", "ediscovery", "discovery", "finra", "ethical", "wall", "barriers", "investigation", "archive", "bank", "banking", "financial", "services", "insurance"] },
+  { lob: "Legal & compliance", title: "Secure collaboration on health data",
+    summary: "Let clinical and care teams collaborate in Slack while supporting HIPAA requirements.",
+    steps: ["Sign a BAA and configure Slack for HIPAA", "Use DLP to detect sensitive data in the wrong places", "Manage devices with EMM integration"],
+    prompt: "Which settings do we need to use Slack with patient information?",
+    features: ["HIPAA compliance support", "Native data loss prevention (DLP)", "EMM integration"],
+    keywords: ["health", "healthcare", "hipaa", "patient", "patients", "clinical", "medical", "hospital", "phi", "care"] },
+
+  // --- Operations ---
+  { lob: "Operations", title: "Shift handovers and daily recaps",
+    summary: "Keep frontline and operations teams aligned across shifts with recaps and quick voice updates.",
+    steps: ["Daily recaps summarise what happened in key channels", "Teams post handover notes by voice or clip", "Open issues are tracked in a List"],
+    prompt: "What happened on the night shift and what needs attention this morning?",
+    features: ["Daily recaps", "Thread & channel summaries", "Voice commands", "Lists"],
+    keywords: ["shift", "shifts", "handover", "handovers", "frontline", "operations", "ops", "recap", "daily", "store", "stores", "warehouse", "field"] },
+  { lob: "Operations", title: "Supplier and vendor collaboration",
+    summary: "Work with suppliers in shared channels and automate order and issue workflows.",
+    steps: ["Invite suppliers to Slack Connect channels", "Log issues and orders with workflows", "Track deliveries and escalations in a List"],
+    prompt: "Summarise open issues with our logistics provider this week.",
+    features: ["Slack Connect", "Workflow Builder", "Lists"],
+    keywords: ["supplier", "suppliers", "vendor", "vendors", "logistics", "supply", "chain", "orders", "procurement", "partners", "delivery"] },
+
+  // --- Leadership ---
+  { lob: "Leadership", title: "Executive briefing every morning",
+    summary: "Start the day with a personal briefing of what matters across the business, without reading every channel.",
+    steps: ["Daily recaps of the channels that matter to you", "Ask Slackbot for a cross-team briefing", "Slackbot remembers your priorities over time"],
+    prompt: "Give me a briefing on the top risks and wins across sales, product and support this week.",
+    features: ["Daily recaps", "Deep research", "Memory"],
+    keywords: ["executive", "executives", "leadership", "ceo", "briefing", "brief", "overview", "catch", "up", "priorities", "busy", "summary"] },
+  { lob: "Leadership", title: "One place to find answers across all systems",
+    summary: "Search across Slack and your connected business systems at once, so leaders and teams get answers without chasing people.",
+    steps: ["Connect key apps and data sources to enterprise search", "Ask questions in natural language", "Answers respect each person's permissions in the source system"],
+    prompt: "What's the latest on the EMEA expansion — budget, hiring and open decisions?",
+    features: ["Enterprise search", "Ask questions about your conversations & files"],
+    keywords: ["search", "find", "answers", "systems", "silos", "information", "knowledge", "across", "tools", "apps", "everything"] },
+  { lob: "Leadership", title: "Company-wide announcements and alignment",
+    summary: "Share updates leaders can be sure people see, and gather feedback at scale.",
+    steps: ["Use an announcement channel with posting permissions", "Share video updates as clips", "Run quick polls and pulse surveys built by Slackbot"],
+    prompt: "Create a quick poll asking employees how confident they are in our Q3 priorities.",
+    features: ["Audio & video clips", "Interactive dashboards, reports, polls & calculators", "Workflow Builder"],
+    keywords: ["announcement", "announcements", "communication", "communications", "company", "all-hands", "town", "hall", "alignment", "engagement", "culture", "poll", "survey"] },
+];
+
+const LOB_HINTS = {
+  "Sales": ["sales", "seller", "sellers", "rep", "reps", "account", "executive", "ae", "pipeline", "deal", "deals", "revenue"],
+  "Customer service": ["service", "support", "customer", "agent", "agents", "case", "cases", "contact", "center", "centre", "cx"],
+  "Marketing": ["marketing", "campaign", "brand", "content", "agency"],
+  "IT": ["it", "helpdesk", "infrastructure", "security", "sysadmin", "incident"],
+  "HR": ["hr", "people", "talent", "recruiting", "hiring", "employee", "employees"],
+  "Finance": ["finance", "financial", "accounting", "cfo", "budget", "spend"],
+  "Engineering & product": ["engineering", "engineers", "developer", "developers", "product", "dev", "devops"],
+  "Legal & compliance": ["legal", "compliance", "lawyer", "lawyers", "counsel", "regulated"],
+  "Operations": ["operations", "ops", "frontline", "logistics", "supply", "retail", "manufacturing"],
+  "Leadership": ["leadership", "executive", "executives", "ceo", "leaders", "management"],
+};
+
+const ucState = { lob: "All", query: "" };
+const CURRENT_PLANS = PLANS.filter(p => !p.legacy);
+const FEATURE_INDEX = new Map(FEATURES.flatMap(c => c.items).map(f => [f.name, f]));
+
+// Lowest current plan that fully includes a feature ("trial" and "addon" don't count)
+function minPlanForFeature(name) {
+  const f = FEATURE_INDEX.get(name);
+  if (!f) return CURRENT_PLANS.length - 1;
+  const i = CURRENT_PLANS.findIndex(p => { const v = f.values[PLANS.indexOf(p)]; return v !== false && v !== "trial" && v !== "addon"; });
+  return i < 0 ? CURRENT_PLANS.length - 1 : i;
+}
+const minPlanFor = uc => CURRENT_PLANS[Math.max(...uc.features.map(minPlanForFeature))];
+
+const UC_INDEX = USE_CASES.map(uc => ({
+  uc,
+  kw: new Set(uc.keywords.map(k => SYNONYMS[k] || k)),
+  text: new Set(tokenize(uc.title + " " + uc.summary + " " + uc.steps.join(" "))),
+}));
+
+function matchUseCases(query) {
+  const tokens = tokenize(query);
+  const lobs = Object.entries(LOB_HINTS).filter(([, hints]) => tokens.some(t => hints.includes(t))).map(([l]) => l);
+  if (/\bIT\b/.test(query)) lobs.push("IT"); // "it" is a stopword, so detect the acronym separately
+  const scored = UC_INDEX.map(ix => {
+    let score = 0;
+    for (const t of tokens) {
+      if (ix.kw.has(t)) score += 3;
+      else if (ix.text.has(t)) score += 1;
+      else if (t.length > 4 && [...ix.kw].some(k => k.length > 4 && (k.startsWith(t) || t.startsWith(k)))) score += 1.5;
+    }
+    if (lobs.includes(ix.uc.lob)) score += 2.5;
+    return { uc: ix.uc, score };
+  }).filter(r => r.score >= 3).sort((a, b) => b.score - a.score);
+  // Keep only results reasonably close to the best match
+  const best = scored.length ? scored[0].score : 0;
+  return scored.filter(r => r.score >= best * 0.5).slice(0, 6).map(r => r.uc);
+}
+
+function ucCardHtml(uc) {
+  const plan = minPlanFor(uc);
+  return `<div class="uc-card">
+    <div class="uc-top">
+      <div><div class="lob">${uc.lob}</div><h3>${uc.title}</h3></div>
+      <span class="plan-pill" style="--plan-color:${plan.color}" title="Lowest plan that includes every feature used">${plan.name}</span>
+    </div>
+    <p>${uc.summary}</p>
+    <ol>${uc.steps.map(s => `<li>${s}</li>`).join("")}</ol>
+    <div class="prompt"><span>Try asking Slackbot</span>"${uc.prompt}"</div>
+    <div class="feats">${uc.features.map(f => `<span class="feat">${f}</span>`).join("")}</div>
+  </div>`;
+}
+
+function renderUseCases() {
+  document.getElementById("ucLobs").innerHTML = ["All", ...LOBS].map(l =>
+    `<button data-lob="${l}" class="${!ucState.query && ucState.lob === l ? "active" : ""}">${l}</button>`).join("");
+
+  let list, summary = "";
+  if (ucState.query) {
+    list = matchUseCases(ucState.query);
+    if (list.length) {
+      const top = CURRENT_PLANS[Math.max(...list.map(uc => CURRENT_PLANS.indexOf(minPlanFor(uc))))];
+      const covered = CURRENT_PLANS.map(p => [p, list.filter(uc => CURRENT_PLANS.indexOf(minPlanFor(uc)) <= CURRENT_PLANS.indexOf(p)).length]);
+      summary = `<div class="uc-summary">For <em>"${esc(ucState.query)}"</em> we found <strong>${list.length} use case${list.length === 1 ? "" : "s"}</strong>.
+        <strong>${top.name}</strong> covers all of them${covered.filter(([p, n]) => n > 0 && CURRENT_PLANS.indexOf(p) < CURRENT_PLANS.indexOf(top)).map(([p, n]) => `; ${p.name} covers ${n}`).join("")}.
+        <a href="#" id="ucClear">Show all use cases</a></div>`;
+    } else {
+      summary = `<div class="uc-summary">We couldn't find a close match for <em>"${esc(ucState.query)}"</em>. Try describing the team and the goal (e.g. "finance approvals" or "support escalations"), or browse by line of business below. <a href="#" id="ucClear">Show all use cases</a></div>`;
+    }
+  } else {
+    list = USE_CASES.filter(uc => ucState.lob === "All" || uc.lob === ucState.lob);
+  }
+  document.getElementById("ucSummary").innerHTML = summary;
+  document.getElementById("ucGrid").innerHTML = list.map(ucCardHtml).join("");
+  const clear = document.getElementById("ucClear");
+  if (clear) clear.addEventListener("click", e => { e.preventDefault(); ucState.query = ""; document.getElementById("ucInput").value = ""; renderUseCases(); });
+}
+
+const UC_EXAMPLES = [
+  "Help our support team resolve escalations faster",
+  "Automate purchase approvals in finance",
+  "Give sales reps more time with customers",
+  "Onboard new employees",
+  "We work in a regulated industry",
+];
+document.getElementById("ucExamples").innerHTML = UC_EXAMPLES.map(e => `<button type="button" class="chip" data-example="${e}">${e}</button>`).join("");
+document.getElementById("ucExamples").addEventListener("click", e => {
+  const chip = e.target.closest(".chip");
+  if (!chip) return;
+  document.getElementById("ucInput").value = chip.dataset.example;
+  ucState.query = chip.dataset.example;
+  renderUseCases();
+});
+document.getElementById("ucForm").addEventListener("submit", e => {
+  e.preventDefault();
+  ucState.query = document.getElementById("ucInput").value.trim();
+  renderUseCases();
+});
+document.getElementById("ucInput").addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); document.getElementById("ucForm").requestSubmit(); }
+});
+document.getElementById("ucLobs").addEventListener("click", e => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  ucState.lob = b.dataset.lob;
+  ucState.query = "";
+  document.getElementById("ucInput").value = "";
+  renderUseCases();
+});
+
+// =====================================================================
 // PAGES & EVENTS
 // =====================================================================
 function showPage(page) {
-  if (!["plans", "pricing", "slackbot", "security"].includes(page)) page = "plans";
+  if (!["plans", "pricing", "slackbot", "usecases", "security"].includes(page)) page = "plans";
   state.page = page;
   document.querySelectorAll("section.page").forEach(s => s.classList.toggle("active", s.id === "page-" + page));
   document.querySelectorAll("#tabs a").forEach(a => a.classList.toggle("active", a.dataset.page === page));
@@ -899,6 +1305,7 @@ document.getElementById("chatLog").addEventListener("click", e => {
 
 renderAll();
 renderSecurity();
+renderUseCases();
 showPage(location.hash.slice(1) || "plans");
 </script>
 </body>
