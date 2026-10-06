@@ -104,12 +104,20 @@
   .controls input[type="search"] { flex: 1; min-width: 180px; }
   .controls input[type="number"] { width: 90px; }
 
-  /* Cost summary */
-  .cost-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px; }
-  .cost-tile { background: var(--card); border: 1px solid var(--border); border-left: 5px solid var(--plan-color); border-radius: var(--radius); padding: 14px 16px; }
-  .cost-tile .name { font-weight: 700; font-size: .9rem; }
-  .cost-tile .amount { font-size: 1.35rem; font-weight: 800; margin-top: 2px; }
-  .cost-tile .sub { font-size: .8rem; color: var(--muted); }
+  /* Pricing */
+  .price-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 8px; }
+  .price-card {
+    background: var(--card); border: 1px solid var(--border); border-top: 5px solid var(--plan-color);
+    border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column;
+  }
+  .price-card h3 { margin: 0 0 12px; font-size: 1.1rem; }
+  .price-card .per-user { font-size: 2rem; font-weight: 800; line-height: 1.1; }
+  .price-card .unit { font-size: .8rem; color: var(--muted); margin-top: 2px; }
+  .price-card .saving { align-self: flex-start; margin-top: 10px; font-size: .74rem; font-weight: 700; padding: 3px 9px; border-radius: 99px; background: #e3f5ec; color: #1a7f55; }
+  .price-card .divider { border-top: 1px dashed var(--border); margin: 16px 0 12px; }
+  .price-card .total-label { font-size: .74rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .price-card .total { font-size: 1.3rem; font-weight: 800; margin-top: 2px; }
+  .price-card .total small { font-size: .8rem; font-weight: 500; color: var(--muted); }
 
   /* Tables */
   .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; }
@@ -199,34 +207,19 @@
 
 <header>
   <h1>Compare Slack Plans</h1>
-  <p>Compare plans and prices, see what Slackbot can do on each plan, and get answers on security &amp; compliance.</p>
+  <p>Compare plan features and pricing, see what Slackbot can do on each plan, and get answers on security &amp; compliance.</p>
   <nav class="tabs" id="tabs">
-    <a href="#plans" data-page="plans">Plans &amp; pricing</a>
+    <a href="#plans" data-page="plans">Plans</a>
+    <a href="#pricing" data-page="pricing">Pricing</a>
     <a href="#slackbot" data-page="slackbot">Slackbot</a>
     <a href="#security" data-page="security">Security &amp; compliance</a>
   </nav>
 </header>
 
 <main>
-  <!-- Shared controls -->
-  <div class="controls" id="controls">
-    <div class="toggle-group" id="currencyToggle" aria-label="Currency">
-      <button data-currency="EUR">€ EUR</button>
-      <button data-currency="USD">$ USD</button>
-      <button data-currency="GBP">£ GBP</button>
-    </div>
-    <div class="toggle-group" id="billingToggle" aria-label="Billing">
-      <button data-billing="annual" class="active">Annual billing</button>
-      <button data-billing="monthly">Monthly billing</button>
-    </div>
-    <label class="plans-only">Seats <input type="number" id="seats" min="1" value="50" /></label>
-    <label class="plans-only"><input type="checkbox" id="diffOnly" /> Differences only</label>
-    <input class="plans-only" type="search" id="search" placeholder="Search features… (e.g. SSO, huddles, AI)" />
-  </div>
-
   <!-- ============ PLANS ============ -->
   <section class="page" id="page-plans">
-    <p class="section-title">1 · Select plans (choose 2 or more)</p>
+    <p class="section-title">1 · Select plans to compare (choose 2 or more)</p>
     <div class="plan-picker" id="planPickerCurrent"></div>
     <div class="group-label">
       <p class="section-title">Legacy plans</p>
@@ -234,15 +227,41 @@
     </div>
     <div class="plan-picker" id="planPickerLegacy"></div>
 
-    <p class="section-title" style="margin-top:24px">2 · Estimated cost</p>
-    <div class="cost-row" id="costRow"></div>
-
-    <p class="section-title">3 · Feature comparison</p>
+    <p class="section-title" style="margin-top:24px">2 · Feature comparison</p>
+    <div class="controls">
+      <label><input type="checkbox" id="diffOnly" /> Differences only</label>
+      <input type="search" id="search" placeholder="Search features… (e.g. SSO, huddles, AI)" />
+    </div>
     <div class="table-wrap">
       <table id="compareTable"><thead></thead><tbody></tbody></table>
       <div class="empty" id="emptyState" hidden></div>
     </div>
     <p class="note">Legacy plan values reflect Slack's last published packaging before the June 2025 plan changes. Customers on a legacy plan move to the new version of the plan at their first renewal after 17 August 2025 — check the order form for contract-specific terms.</p>
+  </section>
+
+  <!-- ============ PRICING ============ -->
+  <section class="page" id="page-pricing">
+    <h2>Pricing</h2>
+    <p class="lead">Prices per user per month, excluding VAT/sales tax. Enter your number of seats to estimate the total cost.</p>
+    <div class="controls">
+      <div class="toggle-group" id="currencyToggle" aria-label="Currency">
+        <button data-currency="EUR">€ EUR</button>
+        <button data-currency="USD">$ USD</button>
+        <button data-currency="GBP">£ GBP</button>
+      </div>
+      <div class="toggle-group" id="billingToggle" aria-label="Billing">
+        <button data-billing="annual">Annual billing</button>
+        <button data-billing="monthly">Monthly billing</button>
+      </div>
+      <label>Seats <input type="number" id="seats" min="1" value="50" /></label>
+    </div>
+    <div class="price-grid" id="priceGridCurrent"></div>
+    <div class="group-label">
+      <p class="section-title">Legacy plans</p>
+      <span class="hint">Last published list prices — no longer sold</span>
+    </div>
+    <div class="price-grid" id="priceGridLegacy"></div>
+    <p class="note">Enterprise+ and Enterprise Select are quote-based. Euro and US dollar prices come from Slack's regional pricing pages and secondary sources; pound prices were checked against slack.com/pricing. Promotional discounts are not included.</p>
   </section>
 
   <!-- ============ SLACKBOT ============ -->
@@ -557,19 +576,13 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;"
 // RENDER — plans
 // =====================================================================
 function planCardHtml(p) {
-  const price = priceOf(p);
-  const priceHtml = price === null
-    ? `Custom <small>· contact sales</small>`
-    : price === 0 ? `${money(0)} <small>forever</small>`
-    : `${money(price)} <small>/ user / month</small>`;
   const sel = state.selected.has(p.id);
   return `
     <div class="plan-card ${sel ? "selected" : ""} ${p.legacy ? "legacy" : ""}" data-id="${p.id}" style="--plan-color:${p.color}" role="checkbox" aria-checked="${sel}" tabindex="0">
       <span class="check">✓</span>
       <h3>${p.name}</h3>
       <p class="tagline">${p.tagline}</p>
-      <div class="price">${priceHtml}</div>
-      ${p.badge ? `<span class="badge">${p.badge}</span>` : ""}
+      ${p.badge && p.badge !== "Contact sales" ? `<span class="badge">${p.badge}</span>` : ""}
       ${p.legacy ? `<span class="badge legacy-badge">Legacy · no longer sold</span>` : ""}
     </div>`;
 }
@@ -579,26 +592,38 @@ function renderPicker() {
   document.getElementById("planPickerLegacy").innerHTML = PLANS.filter(p => p.legacy).map(planCardHtml).join("");
 }
 
+function priceCardHtml(p) {
+  const price = priceOf(p);
+  const { annual, monthly } = p.price[state.currency];
+  const seats = `${state.seats} seat${state.seats === 1 ? "" : "s"}`;
+  let perUser, total;
+  if (price === null) {
+    perUser = `<div class="per-user">Custom</div><div class="unit">Contact Slack sales for a quote</div>`;
+    total = `<div class="total-label">Estimated total</div><div class="total">On request</div>`;
+  } else if (price === 0) {
+    perUser = `<div class="per-user">${money(0)}</div><div class="unit">Free forever</div>`;
+    total = `<div class="total-label">Estimated total · ${seats}</div><div class="total">${money(0)}</div>`;
+  } else {
+    const perMonth = price * state.seats;
+    perUser = `<div class="per-user">${money(price)}</div><div class="unit">per user / month, billed ${state.billing === "annual" ? "annually" : "monthly"}</div>`;
+    total = `<div class="total-label">Estimated total · ${seats}</div>
+      <div class="total">${money(perMonth)} <small>/ month</small></div>
+      <div class="unit">${money(perMonth * 12)} per year</div>`;
+  }
+  const saving = annual && monthly && annual < monthly
+    ? `<span class="saving">Save ${Math.round((1 - annual / monthly) * 100)}% with annual billing</span>` : "";
+  return `<div class="price-card" style="--plan-color:${p.color}">
+    <h3>${p.name}</h3>
+    ${perUser}
+    ${saving}
+    <div class="divider"></div>
+    ${total}
+  </div>`;
+}
+
 function renderCosts() {
-  document.getElementById("costRow").innerHTML = selectedPlans().map(p => {
-    const price = priceOf(p);
-    let amount, sub;
-    if (price === null) {
-      amount = "Custom quote";
-      sub = state.billing === "monthly" && p.price[state.currency].annual !== null
-        ? "Annual billing only"
-        : "Pricing via Slack sales";
-    } else {
-      const monthly = price * state.seats;
-      amount = `${money(monthly)} / mo`;
-      sub = `${money(monthly * 12)} per year · ${state.seats} seat${state.seats === 1 ? "" : "s"}`;
-    }
-    return `<div class="cost-tile" style="--plan-color:${p.color}">
-      <div class="name">${p.name}</div>
-      <div class="amount">${amount}</div>
-      <div class="sub">${sub}</div>
-    </div>`;
-  }).join("");
+  document.getElementById("priceGridCurrent").innerHTML = PLANS.filter(p => !p.legacy).map(priceCardHtml).join("");
+  document.getElementById("priceGridLegacy").innerHTML = PLANS.filter(p => p.legacy).map(priceCardHtml).join("");
 }
 
 function cellHtml(v) {
@@ -786,12 +811,10 @@ function renderSecurity() {
 // PAGES & EVENTS
 // =====================================================================
 function showPage(page) {
-  if (!["plans", "slackbot", "security"].includes(page)) page = "plans";
+  if (!["plans", "pricing", "slackbot", "security"].includes(page)) page = "plans";
   state.page = page;
   document.querySelectorAll("section.page").forEach(s => s.classList.toggle("active", s.id === "page-" + page));
   document.querySelectorAll("#tabs a").forEach(a => a.classList.toggle("active", a.dataset.page === page));
-  document.getElementById("controls").hidden = page === "security";
-  document.querySelectorAll(".plans-only").forEach(el => el.style.display = page === "plans" ? "" : "none");
   if (page === "slackbot") renderSlackbot();
 }
 window.addEventListener("hashchange", () => showPage(location.hash.slice(1)));
