@@ -220,6 +220,7 @@
   <!-- ============ PLANS ============ -->
   <section class="page" id="page-plans">
     <p class="section-title">1 · Select plans to compare (choose 2 or more)</p>
+    <p class="note" id="priceHint" style="margin:-4px 0 12px"></p>
     <div class="plan-picker" id="planPickerCurrent"></div>
     <div class="group-label">
       <p class="section-title">Legacy plans</p>
@@ -236,7 +237,7 @@
       <table id="compareTable"><thead></thead><tbody></tbody></table>
       <div class="empty" id="emptyState" hidden></div>
     </div>
-    <p class="note">Legacy plan values reflect Slack's last published packaging before the June 2025 plan changes. Customers on a legacy plan move to the new version of the plan at their first renewal after 17 August 2025 — check the order form for contract-specific terms.</p>
+    <p class="note">Legacy plan values reflect Slack's last published packaging before the June 2025 plan changes. "Add-on" on a legacy plan means the legacy Slack AI add-on, which is no longer sold; customers who bought it keep it until their first renewal after 17 August 2025. Legacy plans don't get the newer Salesforce features (Workflow Builder automations, list views, Sales Home) until they move to the new version of the plan — check the order form for contract-specific terms.</p>
   </section>
 
   <!-- ============ PRICING ============ -->
@@ -339,7 +340,8 @@ const CURRENCIES = {
 // Values: true = included, false = not included, "addon" = paid add-on, "trial" = limited trial, string = detail.
 // Array order matches PLANS: [free, pro, business, enterprise, business_legacy, enterprise_select]
 // Current plans: taken from the "Compare all features" table on slack.com/pricing (Oct 2026).
-// Legacy plans: last published packaging before the June 2025 changes.
+// Salesforce integration and AI-on-legacy values: Slack Help Center "Updates to feature availability and pricing" and "Guide to AI features in Slack".
+// Legacy plans: last published packaging before the June 2025 changes; AI beyond summaries/huddle notes was the legacy Slack AI add-on.
 const FEATURES = [
   { category: "Productivity & collaboration", items: [
     { name: "Message & file history", values: ["90 days", true, true, true, true, true] },
@@ -354,16 +356,16 @@ const FEATURES = [
     { name: "Templates", values: [false, "User-created", "User-created", "Admin-created", "User-created", "User-created"] },
   ]},
   { category: "AI", items: [
-    { name: "Thread & channel summaries", values: [false, true, true, true, "addon", "addon"] },
-    { name: "Huddle notes", values: [false, true, true, true, "addon", "addon"] },
+    { name: "Thread & channel summaries", values: [false, true, true, true, true, true] },
+    { name: "Huddle notes", values: [false, true, true, true, true, true] },
     { name: "AI assistant apps", values: [false, true, true, true, true, true] },
     { name: "Daily recaps", values: [false, false, true, true, "addon", "addon"] },
     { name: "File summaries", values: [false, false, true, true, "addon", "addon"] },
-    { name: "AI language translations", values: [false, false, true, true, false, false] },
+    { name: "AI language translations", values: [false, false, true, true, "addon", "addon"] },
     { name: "AI workflow generation", values: [false, false, true, true, "addon", "addon"] },
-    { name: "AI steps in Workflow Builder", values: [false, false, true, true, false, false] },
+    { name: "AI steps in Workflow Builder", values: [false, false, true, true, "addon", "addon"] },
     { name: "AI message explanations", values: [false, false, true, true, "addon", "addon"] },
-    { name: "AI writing assistance in canvas", values: [false, false, true, true, false, false] },
+    { name: "AI writing assistance in canvas", values: [false, false, true, true, "addon", "addon"] },
     { name: "AI search", values: [false, false, true, true, "addon", "addon"] },
     { name: "Enterprise search", desc: "Search across connected apps, databases and systems", values: [false, false, false, true, false, false] },
   ]},
@@ -374,13 +376,21 @@ const FEATURES = [
     { name: "Conditional branching in Workflow Builder", values: [false, false, true, true, false, false] },
     { name: "Custom workflow steps", values: [false, true, true, true, true, true] },
   ]},
+  { category: "Salesforce integration", items: [
+    { name: "Search, view & edit Salesforce records in Slack", values: [true, true, true, true, true, true] },
+    { name: "Salesforce record previews", values: [true, true, true, true, true, true] },
+    { name: "Salesforce related lists", values: [false, true, true, true, true, true] },
+    { name: "Salesforce automations in Workflow Builder", values: [false, false, true, true, false, false] },
+    { name: "Salesforce list views", values: [false, false, true, true, false, false] },
+    { name: "Sales Home", values: [false, false, true, true, false, false] },
+  ]},
   { category: "Security", items: [
     { name: "Data encryption at rest & in transit", values: [true, true, true, true, true, true] },
     { name: "Two-factor authentication", values: [true, true, true, true, true, true] },
     { name: "Session duration controls", values: [true, true, true, true, true, true] },
     { name: "Native device management", values: [true, true, true, true, true, true] },
     { name: "Access logs", values: [false, true, true, true, true, true] },
-    { name: "Single sign-on (SSO)", values: [false, "OAuth with Google", "SAML-based", "Multi-SAML", "SAML-based", "SAML-based"] },
+    { name: "Single sign-on (SSO)", desc: "Free & Pro can also use SAML SSO when a Salesforce org is connected", values: [false, "OAuth with Google", "SAML-based", "Multi-SAML", "SAML-based", "SAML-based"] },
     { name: "Slack EKM (Enterprise Key Management)", values: [false, false, false, "addon", false, "addon"] },
     { name: "EMM integration", desc: "Enterprise Mobility Management", values: [false, false, false, true, false, true] },
     { name: "Anomaly event response", values: [false, false, false, true, false, false] },
@@ -401,7 +411,7 @@ const FEATURES = [
     { name: "Workspaces", values: ["1", "1", "1", "Unlimited", "1", "1"] },
     { name: "Channel posting permissions", values: ["#general only", "#general only", "Any channel", "Any channel", "Any channel", "Any channel"] },
     { name: "Admin analytics dashboard", values: [false, true, true, true, true, true] },
-    { name: "SCIM user management", values: [false, false, true, "Incl. guests", true, true] },
+    { name: "SCIM user management", desc: "Free & Pro can also use SCIM when a Salesforce org is connected", values: [false, false, true, "Incl. guests", true, true] },
     { name: "Admin analytics API", values: [false, false, true, true, false, true] },
     { name: "Message activity analytics", values: [false, false, true, true, true, true] },
     { name: "Custom user groups", values: [false, true, true, true, true, true] },
@@ -421,8 +431,8 @@ const SLACKBOT_ACCESS = [
   { access: "Limited trial", text: "A set of included Slackbot conversations to try it out." },
   { access: "Ongoing access", text: "Slackbot for every member, with a weekly message limit per user." },
   { access: "Unlimited", text: "Unlimited Slackbot, plus enterprise search across connected systems." },
-  { access: "Not included", text: "No Slackbot agent. Summaries, recaps and AI search were available via the legacy Slack AI add-on." },
-  { access: "Not included", text: "No Slackbot agent. Summaries, recaps and AI search were available via the legacy Slack AI add-on." },
+  { access: "Not included", text: "No Slackbot agent. Summaries and huddle notes are included; recaps, AI search and other AI features came with the legacy Slack AI add-on." },
+  { access: "Not included", text: "No Slackbot agent. Summaries and huddle notes are included; recaps, AI search and other AI features came with the legacy Slack AI add-on." },
 ];
 
 const SLACKBOT_FEATURES = [
@@ -431,7 +441,7 @@ const SLACKBOT_FEATURES = [
   ]},
   { category: "Ask & find", items: [
     { name: "Ask questions about your conversations & files", desc: "Rich answers grounded in what you already have access to", values: ["trial", "trial", true, true, false, false] },
-    { name: "Search & summarise channels and threads", values: ["trial", "trial", true, true, "addon", "addon"] },
+    { name: "Search & summarise channels and threads", values: ["trial", "trial", true, true, false, false] },
     { name: "Deep research", desc: "Multi-step research across Slack and connected sources", values: [false, false, true, true, false, false] },
     { name: "Enterprise search", desc: "Find answers across connected apps, databases and systems", values: [false, false, false, true, false, false] },
   ]},
@@ -576,18 +586,26 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;"
 // RENDER — plans
 // =====================================================================
 function planCardHtml(p) {
+  const price = priceOf(p);
+  const priceHtml = price === null
+    ? `Custom <small>· contact sales</small>`
+    : price === 0 ? `${money(0)} <small>forever</small>`
+    : `${money(price)} <small>/ user / month</small>`;
   const sel = state.selected.has(p.id);
   return `
     <div class="plan-card ${sel ? "selected" : ""} ${p.legacy ? "legacy" : ""}" data-id="${p.id}" style="--plan-color:${p.color}" role="checkbox" aria-checked="${sel}" tabindex="0">
       <span class="check">✓</span>
       <h3>${p.name}</h3>
       <p class="tagline">${p.tagline}</p>
+      <div class="price">${priceHtml}</div>
       ${p.badge && p.badge !== "Contact sales" ? `<span class="badge">${p.badge}</span>` : ""}
       ${p.legacy ? `<span class="badge legacy-badge">Legacy · no longer sold</span>` : ""}
     </div>`;
 }
 
 function renderPicker() {
+  document.getElementById("priceHint").innerHTML =
+    `Prices per seat in ${state.currency}, billed ${state.billing === "annual" ? "annually" : "monthly"} — change currency or billing on the <a href="#pricing">Pricing</a> tab.`;
   document.getElementById("planPickerCurrent").innerHTML = PLANS.filter(p => !p.legacy).map(planCardHtml).join("");
   document.getElementById("planPickerLegacy").innerHTML = PLANS.filter(p => p.legacy).map(planCardHtml).join("");
 }
